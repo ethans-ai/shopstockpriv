@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<h1>Activity</h1>
+
+<% if (!entries.length) { %>
+  <p class="empty-state">No activity yet.</p>
+<% } %>
+
+<ul class="plain-list activity-list">
+  <% for (const a of entries) { %>
+    <li>
+      <span class="activity-time"><%= a.created_at %></span>
+      <% if (a.entity_type === 'item' && a.entity_name) { %>
+        <a href="/items/<%= a.entity_id %>"><%= a.entity_name %></a>
+      <% } else if (a.entity_type === 'location' && a.entity_name) { %>
+        <a href="/locations/<%= a.entity_id %>"><%= a.entity_name %></a>
+      <% } else { %>
+        <%= a.entity_type %> #<%= a.entity_id %>
+      <% } %>
+      — <%= a.action %><% if (a.detail.qty_from !== undefined) { %> (<%= a.detail.qty_from %> → <%= a.detail.qty_to %>)<% } %>
+      <% if (a.person_name) { %> · <%= a.person_name %><% } %>
+    </li>
+  <% } %>
+</ul>
+
+<%- include('partials/footer') %>

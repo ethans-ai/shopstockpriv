@@ -1,0 +1,107 @@
+<%- include('partials/header') %>
+
+<h1><%= item ? 'Edit item' : 'Add item' %></h1>
+
+<form method="post" action="<%= item ? `/items/${item.id}` : '/items' %>" class="stack-form">
+  <input type="hidden" name="person_name_hidden" class="person-hidden">
+
+  <label>Name *
+    <input type="text" name="name" required value="<%= item ? item.name : '' %>"
+           placeholder="e.g. AN-6 straight swivel fitting">
+  </label>
+
+  <label>Description
+    <textarea name="description" rows="2"><%= item ? (item.description || '') : '' %></textarea>
+  </label>
+
+  <div class="form-row">
+    <label>Category
+      <select name="category_id">
+        <option value="">—</option>
+        <% for (const c of categories) { %>
+          <option value="<%= c.id %>" <%= item && item.category_id === c.id ? 'selected' : '' %>><%= c.name %></option>
+        <% } %>
+      </select>
+    </label>
+    <label>Location
+      <select name="location_id">
+        <option value="">—</option>
+        <% for (const l of locationOptions) { %>
+          <option value="<%= l.id %>"
+            <%= (item && item.location_id === l.id) || (!item && presetLocationId === l.id) ? 'selected' : '' %>>
+            <%= l.full_path %>
+          </option>
+        <% } %>
+      </select>
+    </label>
+  </div>
+
+  <fieldset class="type-toggle">
+    <legend>Type</legend>
+    <label class="radio">
+      <input type="radio" name="item_type" value="stock"
+             <%= !item || item.item_type === 'stock' ? 'checked' : '' %>
+             onchange="document.getElementById('stock-fields').hidden = false">
+      Stock — quantity-tracked (consumables, fittings, wire…)
+    </label>
+    <label class="radio">
+      <input type="radio" name="item_type" value="asset"
+             <%= item && item.item_type === 'asset' ? 'checked' : '' %>
+             onchange="document.getElementById('stock-fields').hidden = true">
+      Asset — check-out tracked (tools, test equipment…)
+    </label>
+  </fieldset>
+
+  <div id="stock-fields" <%= item && item.item_type === 'asset' ? 'hidden' : '' %>>
+    <div class="form-row">
+      <label>Quantity
+        <input type="number" name="quantity" step="any" min="0"
+               value="<%= item ? item.quantity : 1 %>">
+      </label>
+      <label>Unit
+        <select name="unit">
+          <% for (const u of units) { %>
+            <option value="<%= u %>" <%= item && item.unit === u ? 'selected' : '' %>><%= u %></option>
+          <% } %>
+        </select>
+      </label>
+      <label>Low-stock alert at ≤
+        <input type="number" name="low_stock_threshold" step="any" min="0"
+               value="<%= item && item.low_stock_threshold !== null ? item.low_stock_threshold : '' %>"
+               placeholder="blank = none">
+      </label>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <label>Manufacturer
+      <input type="text" name="manufacturer" value="<%= item ? (item.manufacturer || '') : '' %>">
+    </label>
+    <label>Part number
+      <input type="text" name="part_number" value="<%= item ? (item.part_number || '') : '' %>">
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label>Supplier
+      <input type="text" name="supplier" value="<%= item ? (item.supplier || '') : '' %>"
+             placeholder="McMaster, Summit, Mouser…">
+    </label>
+    <label>Supplier URL
+      <input type="url" name="supplier_url" value="<%= item ? (item.supplier_url || '') : '' %>">
+    </label>
+  </div>
+
+  <label>Extra attributes <small>(one per line, "key: value" — e.g. "Thread: 9/16-18" or "Series: DTM")</small>
+    <textarea name="attrs_text" rows="3"><% if (item) {
+      const a = JSON.parse(item.attrs_json || '{}');
+      %><%= Object.entries(a).map(([k, v]) => `${k}: ${v}`).join('\n') %><% } %></textarea>
+  </label>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary btn-lg"><%= item ? 'Save' : 'Add item' %></button>
+    <a href="<%= item ? `/items/${item.id}` : '/' %>" class="btn">Cancel</a>
+  </div>
+</form>
+
+<%- include('partials/footer') %>

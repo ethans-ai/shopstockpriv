@@ -1,0 +1,26 @@
+<div class="qty-controls" id="qty-controls">
+  <form method="post" action="/items/<%= item.id %>/qty"
+        hx-post="/items/<%= item.id %>/qty" hx-target="#qty-controls" hx-swap="outerHTML">
+    <input type="hidden" name="delta" value="-1">
+    <input type="hidden" name="person_name_hidden" class="person-hidden">
+    <button type="submit" class="btn qty-btn" aria-label="Remove one">−</button>
+  </form>
+  <div class="qty-display <%= item.low_stock_threshold !== null && item.quantity <= item.low_stock_threshold ? 'qty-low' : '' %>">
+    <span class="qty-number"><%= item.quantity %></span>
+    <span class="qty-unit"><%= item.unit %></span>
+  </div>
+  <form method="post" action="/items/<%= item.id %>/qty"
+        hx-post="/items/<%= item.id %>/qty" hx-target="#qty-controls" hx-swap="outerHTML">
+    <input type="hidden" name="delta" value="1">
+    <input type="hidden" name="person_name_hidden" class="person-hidden">
+    <button type="submit" class="btn qty-btn" aria-label="Add one">+</button>
+  </form>
+  <details class="qty-set">
+    <summary>set</summary>
+    <form method="post" action="/items/<%= item.id %>/qty" class="qty-set-form">
+      <input type="number" name="set" step="any" min="0" value="<%= item.quantity %>" class="input-sm">
+      <input type="hidden" name="person_name_hidden" class="person-hidden">
+      <button type="submit" class="btn btn-sm">Set</button>
+    </form>
+  </details>
+</div>

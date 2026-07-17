@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<h1>Locations</h1>
+
+<% if (!roots.length) { %>
+  <p class="empty-state">No locations yet. Start with rooms or storage areas, then add cabinets/shelves/bins inside them.</p>
+<% } %>
+
+<div class="loc-list">
+  <% for (const l of roots) { %>
+    <a class="loc-row" href="/locations/<%= l.id %>">
+      <span class="loc-kind"><%= { room: '🏠', cabinet: '🗄️', shelf: '📚', bin: '🗑️', drawer: '📥', other: '📍' }[l.kind] || '📍' %></span>
+      <span class="loc-name"><%= l.name %></span>
+      <span class="loc-count"><%= l.itemCount %> items</span>
+    </a>
+  <% } %>
+</div>
+
+<details class="add-inline" <%= !roots.length ? 'open' : '' %>>
+  <summary class="btn btn-primary">＋ Add top-level location</summary>
+  <form method="post" action="/locations" class="stack-form">
+    <label>Name
+      <input type="text" name="name" required placeholder="e.g. Dyno Cell 2 storage">
+    </label>
+    <label>Kind
+      <select name="kind">
+        <option value="room">Room / area</option>
+        <option value="cabinet">Cabinet</option>
+        <option value="shelf">Shelf</option>
+        <option value="bin">Bin</option>
+        <option value="drawer">Drawer</option>
+        <option value="other" selected>Other</option>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+</details>
+
+<%- include('partials/footer') %>

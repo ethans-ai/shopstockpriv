@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+
+<h1>Checked out <small class="count">(<%= checkouts.length %>)</small></h1>
+
+<% if (!checkouts.length) { %>
+  <p class="empty-state">✅ Everything is checked in.</p>
+<% } %>
+
+<div class="item-list">
+  <% for (const co of checkouts) { %>
+    <div class="item-row" id="co-<%= co.id %>">
+      <% if (co.primary_photo) { %>
+        <img class="item-thumb" src="/photos/thumbs/<%= co.primary_photo %>" alt="" loading="lazy">
+      <% } else { %>
+        <div class="item-thumb item-thumb-empty">🔧</div>
+      <% } %>
+      <a class="item-row-main" href="/items/<%= co.item_id %>">
+        <div class="item-row-name"><%= co.item_name %></div>
+        <div class="item-row-sub">
+          <a href="/people/<%= co.person_id %>"><%= co.person_name %></a>
+          — since <%= co.checked_out_at %> UTC
+          <% if (co.note) { %> · "<%= co.note %>"<% } %>
+        </div>
+      </a>
+      <div class="item-row-side">
+        <form method="post" action="/items/<%= co.item_id %>/checkin"
+              hx-post="/items/<%= co.item_id %>/checkin" hx-target="#co-<%= co.id %>" hx-swap="outerHTML">
+          <input type="hidden" name="from" value="list">
+          <input type="hidden" name="redirect" value="/checkouts">
+          <input type="hidden" name="person_name_hidden" class="person-hidden">
+          <button type="submit" class="btn btn-sm btn-primary">Check in</button>
+        </form>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

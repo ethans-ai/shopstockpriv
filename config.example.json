@@ -1,0 +1,6 @@
+{
+  "port": 8340,
+  "bindHost": "127.0.0.1",
+  "baseUrl": "",
+  "siteName": "ShopStock"
+}

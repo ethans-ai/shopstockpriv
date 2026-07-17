@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+<h1>Already checked out</h1>
+
+<div class="flash flash-error">
+  <strong><%= item.name %></strong> is already out to
+  <strong><%= existing.person_name %></strong> (since <%= existing.checked_out_at %> UTC).
+</div>
+
+<p>If you physically have it now, you can take it over — this checks it in for
+  <%= existing.person_name %> and out to you in one step.</p>
+
+<form method="post" action="/items/<%= item.id %>/checkout" class="stack-form">
+  <input type="hidden" name="takeover" value="1">
+  <input type="hidden" name="person_name" value="<%= attemptedName %>">
+  <input type="hidden" name="note" value="<%= attemptedNote %>">
+  <button type="submit" class="btn btn-primary btn-lg">Take over as <%= attemptedName %></button>
+  <a href="/items/<%= item.id %>" class="btn">Cancel</a>
+</form>
+<%- include('partials/footer') %>

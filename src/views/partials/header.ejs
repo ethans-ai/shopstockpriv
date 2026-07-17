@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · <%= cfg.siteName %></title>
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <script src="/js/htmx.min.js" defer></script>
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <a href="/" class="brand">🔧 <%= cfg.siteName %></a>
+  <nav class="topnav">
+    <a href="/locations" class="<%= currentPath.startsWith('/locations') ? 'active' : '' %>">Locations</a>
+    <a href="/low-stock" class="<%= currentPath === '/low-stock' ? 'active' : '' %>">
+      Low stock<% if (lowStockCount > 0) { %><span class="badge badge-warn"><%= lowStockCount %></span><% } %>
+    </a>
+    <a href="/checkouts" class="<%= currentPath === '/checkouts' ? 'active' : '' %>">
+      Out<% if (openCheckoutCount > 0) { %><span class="badge"><%= openCheckoutCount %></span><% } %>
+    </a>
+    <a href="/labels" class="<%= currentPath === '/labels' ? 'active' : '' %>">Labels</a>
+  </nav>
+</header>
+<main class="container">

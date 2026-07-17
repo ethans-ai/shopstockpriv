@@ -1,0 +1,11 @@
+<%- include('partials/header') %>
+<h1>Code not found</h1>
+<p class="empty-state">
+  <strong><%= code %></strong> doesn't match any item or location.
+  The label may belong to something that was deleted, or the code was mistyped.
+</p>
+<form action="/search" method="get" class="search-hero">
+  <input type="search" name="q" class="search-input" placeholder="Search instead…" autofocus>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<%- include('partials/footer') %>

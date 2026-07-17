@@ -1,0 +1,115 @@
+<%- include('partials/header') %>
+
+<h1>Print labels</h1>
+
+<form action="/labels/print" method="get" target="_blank" class="stack-form" id="label-form">
+  <label>Code type
+    <select name="sym" id="sym-select">
+      <option value="c128">Barcode (Code 128) — for the USB scanner at the inventory PC</option>
+      <option value="qr">QR code — for phone cameras (LAN mode)</option>
+    </select>
+  </label>
+  <% if (!cfg.baseUrl) { %>
+    <div class="flash flash-error" id="qr-warning" hidden>
+      ⚠️ <strong>Base URL is not set.</strong> QR codes printed now will point at localhost and
+      won't work from phones. <a href="/admin">Set it in Admin</a> first. (Barcodes are unaffected.)
+    </div>
+  <% } %>
+
+  <label>Label template
+    <select name="template">
+      <% for (const [key, t] of Object.entries(templates)) { %>
+        <option value="<%= key %>"><%= t.name %></option>
+      <% } %>
+    </select>
+  </label>
+
+  <label class="avery-only">Skip first N labels <small>(reuse a partially-used Avery sheet)</small>
+    <input type="number" name="start" min="0" max="29" value="0">
+  </label>
+
+  <fieldset>
+    <legend>What to print</legend>
+    <label>Everything in a location:
+      <select name="location_id">
+        <option value="">—</option>
+        <% for (const l of locationOptions) { %>
+          <option value="<%= l.id %>"><%= l.full_path %></option>
+        <% } %>
+      </select>
+    </label>
+    <label>Include
+      <select name="include">
+        <option value="items">Items only</option>
+        <option value="locations">Location + sub-location labels</option>
+        <option value="both">Both</option>
+      </select>
+    </label>
+    <p class="hint">…or search and pick individual things:</p>
+    <input type="search" id="label-search" placeholder="Search items to add…" autocomplete="off">
+    <div id="label-search-results" class="picker-results"></div>
+    <div id="label-picked" class="picker-picked"></div>
+    <input type="hidden" name="ids" id="label-ids">
+  </fieldset>
+
+  <button type="submit" class="btn btn-primary btn-lg">Preview / print</button>
+  <p class="hint">In the print dialog set <strong>margins: none</strong> and <strong>scale: 100%</strong>. Run the <a href="/labels/print-ruler" target="_blank">ruler test</a> once per printer.</p>
+</form>
+
+<script>
+(function () {
+  const warn = document.getElementById('qr-warning');
+  const symSel = document.getElementById('sym-select');
+  if (warn && symSel) {
+    symSel.addEventListener('change', () => { warn.hidden = symSel.value !== 'qr'; });
+  }
+
+  const picked = new Map();
+  const searchEl = document.getElementById('label-search');
+  const resultsEl = document.getElementById('label-search-results');
+  const pickedEl = document.getElementById('label-picked');
+  const idsEl = document.getElementById('label-ids');
+
+  function renderPicked() {
+    pickedEl.innerHTML = '';
+    for (const [id, name] of picked) {
+      const chip = document.createElement('span');
+      chip.className = 'chip chip-removable';
+      chip.textContent = name + ' ✕';
+      chip.onclick = () => { picked.delete(id); renderPicked(); };
+      pickedEl.appendChild(chip);
+    }
+    idsEl.value = [...picked.keys()].join(',');
+  }
+
+  let timer;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(async () => {
+      const q = searchEl.value.trim();
+      resultsEl.innerHTML = '';
+      if (q.length < 2) return;
+      const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+      const data = await res.json();
+      for (const it of data.items) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'picker-row';
+        row.textContent = '📦 ' + it.name + (it.part_number ? ' · ' + it.part_number : '');
+        row.onclick = () => { picked.set('i' + it.id, it.name); renderPicked(); };
+        resultsEl.appendChild(row);
+      }
+      for (const l of data.locations) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'picker-row';
+        row.textContent = '📍 ' + l.full_path;
+        row.onclick = () => { picked.set('l' + l.id, l.name); renderPicked(); };
+        resultsEl.appendChild(row);
+      }
+    }, 250);
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

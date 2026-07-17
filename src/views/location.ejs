@@ -1,0 +1,89 @@
+<%- include('partials/header') %>
+
+<nav class="breadcrumb">
+  <a href="/locations">Locations</a>
+  <% for (const b of breadcrumb) { %>
+    › <% if (b.id === loc.id) { %><strong><%= b.name %></strong><% } else { %><a href="/locations/<%= b.id %>"><%= b.name %></a><% } %>
+  <% } %>
+</nav>
+
+<div class="loc-header">
+  <h1><%= loc.name %></h1>
+  <span class="code-chip"><%= loc.shortcode %></span>
+</div>
+<% if (loc.notes) { %><p class="item-desc"><%= loc.notes %></p><% } %>
+<p class="hint"><%= subtreeCount %> item<%= subtreeCount === 1 ? '' : 's' %> in this location and below</p>
+
+<section class="item-actions">
+  <a class="btn btn-primary" href="/items/new?location_id=<%= loc.id %>">＋ Add item here</a>
+  <a class="btn" href="/labels/print?template=avery5160&ids=l<%= loc.id %>" target="_blank">🏷️ Print label</a>
+  <a class="btn" href="/labels/print?template=avery5160&location_id=<%= loc.id %>&include=both" target="_blank">🏷️ Label everything here</a>
+</section>
+
+<% if (children.length) { %>
+<h2>Inside</h2>
+<div class="loc-list">
+  <% for (const l of children) { %>
+    <a class="loc-row" href="/locations/<%= l.id %>">
+      <span class="loc-kind"><%= { room: '🏠', cabinet: '🗄️', shelf: '📚', bin: '🗑️', drawer: '📥', other: '📍' }[l.kind] || '📍' %></span>
+      <span class="loc-name"><%= l.name %></span>
+      <span class="loc-count"><%= l.itemCount %> items</span>
+    </a>
+  <% } %>
+</div>
+<% } %>
+
+<details class="add-inline">
+  <summary class="btn">＋ Add sub-location</summary>
+  <form method="post" action="/locations" class="stack-form">
+    <input type="hidden" name="parent_id" value="<%= loc.id %>">
+    <label>Name <input type="text" name="name" required placeholder="e.g. Shelf 3, Bin 12"></label>
+    <label>Kind
+      <select name="kind">
+        <% for (const k of kinds) { %><option value="<%= k %>"><%= k %></option><% } %>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+</details>
+
+<h2>Items here <small class="count">(<%= itemsHere.length %>)</small></h2>
+<% if (!itemsHere.length) { %>
+  <p class="empty-state">No items directly in this location.</p>
+<% } %>
+<div class="item-list">
+  <% for (const item of itemsHere) { %>
+    <%- include('partials/item-row', { item }) %>
+  <% } %>
+</div>
+
+<details class="add-inline">
+  <summary>Edit / move / delete this location</summary>
+  <form method="post" action="/locations/<%= loc.id %>" class="stack-form">
+    <label>Name <input type="text" name="name" value="<%= loc.name %>" required></label>
+    <label>Kind
+      <select name="kind">
+        <% for (const k of kinds) { %><option value="<%= k %>" <%= loc.kind === k ? 'selected' : '' %>><%= k %></option><% } %>
+      </select>
+    </label>
+    <label>Notes <textarea name="notes" rows="2"><%= loc.notes || '' %></textarea></label>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+  <form method="post" action="/locations/<%= loc.id %>/move" class="stack-form">
+    <label>Move into
+      <select name="parent_id">
+        <option value="">— top level —</option>
+        <% for (const l of locationOptions) { if (l.id !== loc.id) { %>
+          <option value="<%= l.id %>" <%= loc.parent_id === l.id ? 'selected' : '' %>><%= l.full_path %></option>
+        <% } } %>
+      </select>
+    </label>
+    <button type="submit" class="btn">Move</button>
+  </form>
+  <form method="post" action="/locations/<%= loc.id %>/delete"
+        onsubmit="return confirm('Delete this location? It must be empty.')">
+    <button type="submit" class="btn btn-danger">Delete location</button>
+  </form>
+</details>
+
+<%- include('partials/footer') %>

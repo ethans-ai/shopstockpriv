@@ -1,0 +1,24 @@
+<% if (locationResults.length) { %>
+  <h2>Locations</h2>
+  <div class="loc-list">
+    <% for (const l of locationResults) { %>
+      <a class="loc-row" href="/locations/<%= l.id %>">
+        <span class="loc-kind">📍</span>
+        <span class="loc-name"><%= l.full_path %></span>
+      </a>
+    <% } %>
+  </div>
+<% } %>
+
+<% if (itemResults.length) { %>
+  <h2>Items</h2>
+  <div class="item-list">
+    <% for (const item of itemResults) { %>
+      <%- include('item-row', { item }) %>
+    <% } %>
+  </div>
+<% } %>
+
+<% if (!itemResults.length && !locationResults.length) { %>
+  <p class="empty-state">Nothing found for "<%= q %>". <a href="/items/new">Add it as a new item?</a></p>
+<% } %>

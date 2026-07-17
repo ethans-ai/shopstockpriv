@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+
+<form action="/search" method="get" class="search-hero" autocomplete="off">
+  <input type="search" name="q" value="<%= q %>" class="search-input" placeholder="Search parts, P/Ns, codes…">
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<%- include('partials/search-results') %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Labels — Avery 5160</title>
+<style>
+  @page { size: 8.5in 11in; margin: 0.5in 0.19in; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; color-scheme: only light; }
+  .sheet {
+    display: grid;
+    grid-template-columns: repeat(3, 2.625in);
+    grid-auto-rows: 1in;
+    column-gap: 0.125in;
+    width: 8.125in;
+  }
+  .cell {
+    width: 2.625in; height: 1in;
+    padding: 0.07in 0.1in;
+    overflow: hidden;
+    break-inside: avoid;
+  }
+  /* QR: code square on the left, text right */
+  .cell.qr { display: flex; align-items: center; gap: 0.08in; }
+  .cell.qr .code-img { width: 0.82in; height: 0.82in; flex: 0 0 auto; }
+  .cell.qr .name {
+    font-size: 9pt; font-weight: bold; line-height: 1.15;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  /* Code 128: name on top, wide barcode, code + sub below */
+  .cell.c128 { display: flex; flex-direction: column; justify-content: space-between; }
+  .cell.c128 .code-img { width: 100%; height: 0.36in; }
+  .cell.c128 .name {
+    font-size: 8.5pt; font-weight: bold; line-height: 1.1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cell.c128 .bottom { display: flex; gap: 0.08in; align-items: baseline; }
+  .code-img svg { width: 100%; height: 100%; }
+  .txt { min-width: 0; }
+  .sub { font-size: 6.5pt; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .code { font-size: 8pt; font-family: Consolas, monospace; letter-spacing: 0.05em; }
+  .print-note { padding: 8px; background: #ffec9e; font-size: 14px; }
+  @media print { .print-note { display: none; } }
+</style>
+</head>
+<body>
+<div class="print-note">
+  Print at <strong>100% scale, margins: default (do not choose "None" — the page margin is built in)</strong>.
+  <% if (sym === 'qr' && !baseUrlSet) { %><strong style="color:#b00">⚠️ Base URL not set — these QRs point at localhost and won't scan usefully!</strong><% } %>
+  <button onclick="print()">Print</button>
+</div>
+<div class="sheet">
+  <% for (let s = 0; s < start; s++) { %><div class="cell"></div><% } %>
+  <% for (const l of labels) { %>
+    <% if (sym === 'c128') { %>
+      <div class="cell c128">
+        <div class="name"><%= l.name %></div>
+        <div class="code-img"><%- l.codeSvg %></div>
+        <div class="bottom">
+          <span class="code"><%= l.code %></span>
+          <% if (l.sub) { %><span class="sub"><%= l.sub %></span><% } %>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="cell qr">
+        <div class="code-img"><%- l.codeSvg %></div>
+        <div class="txt">
+          <div class="name"><%= l.name %></div>
+          <div class="code"><%= l.code %></div>
+          <% if (l.sub) { %><div class="sub"><%= l.sub %></div><% } %>
+        </div>
+      </div>
+    <% } %>
+  <% } %>
+</div>
+</body>
+</html>

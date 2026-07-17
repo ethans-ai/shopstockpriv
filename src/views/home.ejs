@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+
+<form action="/search" method="get" class="search-hero" autocomplete="off">
+  <input type="search" name="q" placeholder="Search parts, P/Ns, codes…"
+         class="search-input" autofocus
+         hx-get="/search" hx-trigger="input changed delay:300ms" hx-target="#live-results"
+         hx-params="*">
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<p class="hint">📷 Barcode scanner ready — scan any label from anywhere in the app to jump to that item.</p>
+<div id="live-results"></div>
+
+<h2>Categories</h2>
+<div class="tile-grid">
+  <% for (const c of categories) { %>
+    <a class="tile" href="/items?category=<%= c.id %>">
+      <span class="tile-name"><%= c.name %></span>
+      <span class="tile-count"><%= c.item_count %></span>
+    </a>
+  <% } %>
+</div>
+
+<div class="home-actions">
+  <a href="/locations" class="btn btn-block">📍 Browse locations</a>
+  <a href="/items/new" class="btn btn-block btn-primary">＋ Add item</a>
+</div>
+
+<%- include('partials/footer') %>

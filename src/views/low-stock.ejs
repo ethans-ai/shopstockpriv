@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<h1>Low stock <small class="count">(<%= items.length %>)</small></h1>
+
+<% if (!items.length) { %>
+  <p class="empty-state">✅ Nothing is below its low-stock threshold.</p>
+<% } %>
+
+<div class="item-list">
+  <% for (const item of items) { %>
+    <div class="item-row low-stock-row">
+      <a class="item-row-main" href="/items/<%= item.id %>">
+        <div class="item-row-name"><%= item.name %></div>
+        <div class="item-row-sub">
+          <% if (item.part_number) { %><span class="pn"><%= item.part_number %></span><% } %>
+          <% if (item.supplier) { %><span><%= item.supplier %></span><% } %>
+          <% if (item.location_path) { %><span class="loc"><%= item.location_path %></span><% } %>
+        </div>
+      </a>
+      <div class="item-row-side">
+        <span class="qty qty-low"><%= item.quantity %> / <%= item.low_stock_threshold %> <%= item.unit %></span>
+        <% if (item.supplier_url) { %>
+          <a class="btn btn-sm" href="<%= item.supplier_url %>" target="_blank" rel="noopener">Reorder ↗</a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

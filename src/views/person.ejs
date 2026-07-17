@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+
+<h1><%= person.name %></h1>
+
+<h2>Currently has out <small class="count">(<%= open.length %>)</small></h2>
+<% if (!open.length) { %>
+  <p class="empty-state">Nothing checked out.</p>
+<% } %>
+
+<div class="item-list">
+  <% for (const co of open) { %>
+    <a class="item-row" href="/items/<%= co.item_id %>">
+      <div class="item-row-main">
+        <div class="item-row-name"><%= co.item_name %></div>
+        <div class="item-row-sub">since <%= co.checked_out_at %> UTC<% if (co.note) { %> · "<%= co.note %>"<% } %></div>
+      </div>
+    </a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,25 @@
+<a class="item-row" href="/items/<%= item.id %>">
+  <% if (item.primary_photo) { %>
+    <img class="item-thumb" src="/photos/thumbs/<%= item.primary_photo %>" alt="" loading="lazy">
+  <% } else { %>
+    <div class="item-thumb item-thumb-empty">📦</div>
+  <% } %>
+  <div class="item-row-main">
+    <div class="item-row-name"><%= item.name %></div>
+    <div class="item-row-sub">
+      <% if (item.part_number) { %><span class="pn"><%= item.part_number %></span><% } %>
+      <% if (item.location_path) { %><span class="loc"><%= item.location_path %></span><% } %>
+    </div>
+  </div>
+  <div class="item-row-side">
+    <% if (item.item_type === 'stock') { %>
+      <span class="qty <%= item.low_stock_threshold !== null && item.quantity <= item.low_stock_threshold ? 'qty-low' : '' %>">
+        <%= item.quantity %> <%= item.unit %>
+      </span>
+    <% } else if (item.is_checked_out) { %>
+      <span class="badge badge-out">OUT</span>
+    <% } else { %>
+      <span class="badge badge-in">IN</span>
+    <% } %>
+  </div>
+</a>

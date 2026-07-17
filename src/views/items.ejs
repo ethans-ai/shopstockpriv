@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+
+<h1><%= category ? category.name : 'All items' %> <small class="count">(<%= items.length %>)</small></h1>
+
+<% if (!items.length) { %>
+  <p class="empty-state">No items here yet. <a href="/items/new">Add the first one</a>.</p>
+<% } %>
+
+<div class="item-list">
+  <% for (const item of items) { %>
+    <%- include('partials/item-row', { item }) %>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

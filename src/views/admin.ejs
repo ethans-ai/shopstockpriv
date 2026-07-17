@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+
+<h1>Admin</h1>
+
+<% if (saved) { %><div class="flash flash-ok">Saved.</div><% } %>
+
+<section>
+  <h2>Server config</h2>
+  <form method="post" action="/admin/config" class="stack-form">
+    <label>Site name
+      <input type="text" name="siteName" value="<%= config.siteName %>">
+    </label>
+    <label>Base URL <small>(what QR codes encode — set to this PC's LAN address before printing labels!)</small>
+      <input type="url" name="baseUrl" value="<%= config.baseUrl %>"
+             placeholder="http://192.168.1.50:8340">
+    </label>
+    <% if (!config.baseUrl) { %>
+      <div class="flash flash-error">⚠️ Base URL is not set. QR labels printed now will not scan to working links.</div>
+    <% } %>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+  <p class="hint">Port (<%= config.port %>) and data directory are set in <code>config.json</code> and need a restart to change.</p>
+</section>
+
+<section>
+  <h2>Stats</h2>
+  <div class="detail-grid">
+    <div><span class="label">Items</span> <%= stats.items %></div>
+    <div><span class="label">Locations</span> <%= stats.locations %></div>
+    <div><span class="label">People</span> <%= stats.people %></div>
+    <div><span class="label">Photos</span> <%= stats.photos %> (<%= (photoUsage.bytes / 1048576).toFixed(1) %> MB)</div>
+  </div>
+</section>
+
+<section>
+  <h2>Categories</h2>
+  <ul class="plain-list">
+    <% for (const c of categories) { %><li><%= c.name %></li><% } %>
+  </ul>
+  <form method="post" action="/admin/categories" class="inline-form">
+    <input type="text" name="name" placeholder="New category" required>
+    <button type="submit" class="btn">Add</button>
+  </form>
+</section>
+
+<section>
+  <h2>Backup</h2>
+  <p class="hint">Creates a consistent snapshot of the database in <code>data/backups/</code>. Photos are plain files in <code>data/photos/</code> — back up the whole <code>data</code> folder to be safe.</p>
+  <form method="post" action="/admin/backup">
+    <button type="submit" class="btn">Backup database now</button>
+  </form>
+</section>
+
+<section>
+  <h2>Label calibration</h2>
+  <p class="hint">Print this test page at 100% scale and check the ruler against a real one.</p>
+  <a class="btn" href="/labels/print-ruler" target="_blank">Open ruler test page</a>
+</section>
+
+<%- include('partials/footer') %>

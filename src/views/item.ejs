@@ -1,0 +1,171 @@
+<%- include('partials/header') %>
+
+<nav class="breadcrumb">
+  <a href="/locations">Locations</a>
+  <% for (const b of breadcrumb) { %>
+    › <a href="/locations/<%= b.id %>"><%= b.name %></a>
+  <% } %>
+</nav>
+
+<article class="item-page">
+  <div class="item-head">
+    <% if (photos.length) { %>
+      <img class="item-photo" src="/photos/<%= (photos.find(p => p.is_primary) || photos[0]).filename %>" alt="<%= item.name %>">
+    <% } %>
+    <div class="item-head-text">
+      <h1><%= item.name %></h1>
+      <div class="item-meta">
+        <span class="code-chip"><%= item.shortcode %></span>
+        <% if (item.category_name) { %><span class="chip"><%= item.category_name %></span><% } %>
+        <% if (item.part_number) { %><span class="chip">P/N <%= item.part_number %></span><% } %>
+        <% if (item.manufacturer) { %><span class="chip"><%= item.manufacturer %></span><% } %>
+      </div>
+      <% if (item.description) { %><p class="item-desc"><%= item.description %></p><% } %>
+    </div>
+  </div>
+
+  <% if (item.item_type === 'stock') { %>
+    <section class="action-card">
+      <%- include('partials/qty-controls', { item }) %>
+      <% if (item.low_stock_threshold !== null) { %>
+        <p class="hint">Low-stock alert at ≤ <%= item.low_stock_threshold %> <%= item.unit %></p>
+      <% } %>
+    </section>
+  <% } else { %>
+    <section class="action-card">
+      <% if (openCheckout) { %>
+        <div class="checkout-status checkout-out">
+          <div>Checked out to <strong><%= openCheckout.person_name %></strong><br>
+            <small>since <%= openCheckout.checked_out_at %> UTC<% if (openCheckout.note) { %> — "<%= openCheckout.note %>"<% } %></small>
+          </div>
+          <form method="post" action="/items/<%= item.id %>/checkin">
+            <input type="hidden" name="person_name_hidden" class="person-hidden">
+            <button type="submit" class="btn btn-primary btn-lg">Check in</button>
+          </form>
+        </div>
+      <% } else { %>
+        <form method="post" action="/items/<%= item.id %>/checkout" class="checkout-form">
+          <input type="text" name="person_name" placeholder="Your name" required
+                 class="person-input" list="people-list" autocomplete="off">
+          <datalist id="people-list"></datalist>
+          <input type="text" name="note" placeholder="Note (e.g. taking to Cell 4)">
+          <button type="submit" class="btn btn-primary btn-lg">Check out</button>
+        </form>
+      <% } %>
+    </section>
+  <% } %>
+
+  <section class="detail-grid">
+    <% if (item.location_id) { %>
+      <div><span class="label">Location</span>
+        <a href="/locations/<%= item.location_id %>"><%= item.location_path || item.location_name %></a></div>
+    <% } else { %>
+      <div><span class="label">Location</span> <em>not set</em></div>
+    <% } %>
+    <% if (item.supplier) { %>
+      <div><span class="label">Supplier</span>
+        <% if (item.supplier_url) { %><a href="<%= item.supplier_url %>" rel="noopener"><%= item.supplier %></a>
+        <% } else { %><%= item.supplier %><% } %></div>
+    <% } %>
+    <% for (const [k, v] of Object.entries(attrs)) { %>
+      <div><span class="label"><%= k %></span> <%= v %></div>
+    <% } %>
+  </section>
+
+  <section class="item-actions">
+    <a class="btn" href="/items/<%= item.id %>/edit">✏️ Edit</a>
+    <a class="btn" href="/labels/print?template=avery5160&ids=i<%= item.id %>" target="_blank">🏷️ Print label</a>
+    <details class="inline-details">
+      <summary class="btn">📍 Move</summary>
+      <form method="post" action="/items/<%= item.id %>/move" class="move-form">
+        <select name="location_id" class="input">
+          <option value="">— no location —</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Move here</button>
+      </form>
+    </details>
+  </section>
+
+  <section>
+    <h2>Photos</h2>
+    <div class="photo-grid">
+      <% for (const p of photos) { %>
+        <div class="photo-cell">
+          <a href="/photos/<%= p.filename %>" target="_blank">
+            <img src="/photos/thumbs/<%= p.filename %>" alt="" loading="lazy">
+          </a>
+          <div class="photo-actions">
+            <% if (!p.is_primary) { %>
+              <form method="post" action="/photos/<%= p.id %>/primary"><button class="btn btn-sm">★ primary</button></form>
+            <% } %>
+            <form method="post" action="/photos/<%= p.id %>/delete"
+                  onsubmit="return confirm('Delete this photo?')">
+              <input type="hidden" name="person_name_hidden" class="person-hidden">
+              <button class="btn btn-sm btn-danger">delete</button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+      <form method="post" action="/items/<%= item.id %>/photos" enctype="multipart/form-data" class="photo-add">
+        <label class="photo-add-label">
+          📷 Add photo
+          <input type="file" name="photo" accept="image/*" capture="environment"
+                 onchange="this.form.submit()" hidden>
+        </label>
+        <input type="hidden" name="person_name_hidden" class="person-hidden">
+      </form>
+    </div>
+  </section>
+
+  <% if (checkoutHistory.length) { %>
+  <section>
+    <h2>Checkout history</h2>
+    <ul class="plain-list">
+      <% for (const h of checkoutHistory) { %>
+        <li><%= h.person_name %> — out <%= h.checked_out_at %><%= h.checked_in_at ? `, back ${h.checked_in_at}` : ' (still out)' %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+
+  <% if (recentActivity.length) { %>
+  <section>
+    <h2>Recent activity</h2>
+    <ul class="plain-list activity-list">
+      <% for (const a of recentActivity) { %>
+        <li>
+          <span class="activity-time"><%= a.created_at %></span>
+          <%= a.action %><% if (a.detail.qty_from !== undefined) { %> (<%= a.detail.qty_from %> → <%= a.detail.qty_to %>)<% } %>
+          <% if (a.person_name) { %> — <%= a.person_name %><% } %>
+        </li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+
+  <section class="danger-zone">
+    <form method="post" action="/items/<%= item.id %>/delete"
+          onsubmit="return confirm('Remove this item from inventory? Its history is kept.')">
+      <input type="hidden" name="person_name_hidden" class="person-hidden">
+      <button class="btn btn-sm btn-danger">Remove item</button>
+    </form>
+  </section>
+</article>
+
+<script>
+  // Populate the Move dropdown lazily from the locations list
+  document.querySelector('.inline-details')?.addEventListener('toggle', async function () {
+    const sel = this.querySelector('select[name=location_id]');
+    if (sel.dataset.loaded) return;
+    const res = await fetch('/api/locations');
+    const locs = await res.json();
+    for (const l of locs) {
+      const opt = document.createElement('option');
+      opt.value = l.id; opt.textContent = l.full_path;
+      sel.appendChild(opt);
+    }
+    sel.dataset.loaded = '1';
+  });
+</script>
+
+<%- include('partials/footer') %>

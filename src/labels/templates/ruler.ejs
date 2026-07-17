@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Print calibration ruler</title>
+<style>
+  @page { size: 8.5in 11in; margin: 0.5in; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; padding: 20px; background: #fff; color: #000; color-scheme: only light; }
+  .ruler { position: relative; height: 0.6in; border: 1px solid #000; width: 6in; margin: 0.3in 0; }
+  .tick { position: absolute; bottom: 0; width: 1px; background: #000; }
+  .tick.inch { height: 100%; }
+  .tick.half { height: 60%; }
+  .tick.quarter { height: 35%; }
+  .tick-label { position: absolute; top: -1.2em; font-size: 9pt; transform: translateX(-50%); }
+  .box { width: 1in; height: 1in; border: 1px solid #000; display: inline-block; margin-right: 0.25in; }
+  .print-note { padding: 8px; background: #ffec9e; margin-bottom: 16px; }
+  @media print { .print-note { display: none; } }
+</style>
+</head>
+<body>
+<div class="print-note">Print at <strong>100% scale</strong> ("Actual size", no shrink-to-fit). Then check with a real ruler. <button onclick="print()">Print</button></div>
+<h1>ShopStock print calibration</h1>
+<p>The ruler below must measure exactly 6 inches and each box exactly 1 inch square.
+If they don't, your browser print dialog is scaling — fix that before printing labels.</p>
+<div class="ruler">
+  <% for (let i = 0; i <= 24; i++) {
+       const pos = i / 4;
+       const cls = i % 4 === 0 ? 'inch' : (i % 2 === 0 ? 'half' : 'quarter'); %>
+    <div class="tick <%= cls %>" style="left: <%= pos %>in;"></div>
+    <% if (i % 4 === 0) { %><span class="tick-label" style="left: <%= pos %>in;"><%= pos %>"</span><% } %>
+  <% } %>
+</div>
+<div>
+  <div class="box"></div><div class="box"></div><div class="box"></div>
+</div>
+</body>
+</html>
