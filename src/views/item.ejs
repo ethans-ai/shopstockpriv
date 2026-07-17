@@ -62,14 +62,36 @@
     <% } else { %>
       <div><span class="label">Location</span> <em>not set</em></div>
     <% } %>
-    <% if (item.supplier) { %>
-      <div><span class="label">Supplier</span>
-        <% if (item.supplier_url) { %><a href="<%= item.supplier_url %>" rel="noopener"><%= item.supplier %></a>
-        <% } else { %><%= item.supplier %><% } %></div>
-    <% } %>
     <% for (const [k, v] of Object.entries(attrs)) { %>
       <div><span class="label"><%= k %></span> <%= v %></div>
     <% } %>
+  </section>
+
+  <section class="vendor-links">
+    <h2>Vendor links</h2>
+    <div class="vendor-link-list">
+      <% for (const vl of vendorLinks) { %>
+        <span class="vendor-link">
+          <a class="btn btn-sm" href="<%= vl.url %>" target="_blank" rel="noopener noreferrer">🛒 <%= vl.label %> ↗</a>
+          <form method="post" action="/vendor-links/<%= vl.id %>/delete" class="vendor-link-x"
+                data-label="<%= vl.label %>"
+                onsubmit="return confirm('Remove the ' + this.dataset.label + ' link?')">
+            <input type="hidden" name="person_name_hidden" class="person-hidden">
+            <button type="submit" class="btn btn-sm btn-danger" title="Remove link">✕</button>
+          </form>
+        </span>
+      <% } %>
+      <% if (!vendorLinks.length) { %><span class="hint">No vendor links yet.</span><% } %>
+    </div>
+    <details class="add-inline">
+      <summary>＋ Add vendor link</summary>
+      <form method="post" action="/items/<%= item.id %>/vendor-links" class="inline-form vendor-add-form">
+        <input type="text" name="label" placeholder="Vendor (optional, e.g. McMaster)">
+        <input type="text" name="url" placeholder="Paste product URL" required>
+        <input type="hidden" name="person_name_hidden" class="person-hidden">
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+    </details>
   </section>
 
   <section class="item-actions">

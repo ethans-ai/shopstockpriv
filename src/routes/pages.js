@@ -3,6 +3,7 @@ const items = require('../services/items');
 const locations = require('../services/locations');
 const checkouts = require('../services/checkouts');
 const photosSvc = require('../services/photos');
+const vendorLinks = require('../services/vendorLinks');
 const activity = require('../services/activity');
 const search = require('../services/search');
 const config = require('../config');
@@ -46,6 +47,7 @@ router.get('/items/new', (req, res) => {
   res.render('item-form', {
     title: 'Add item',
     item: null,
+    vendorLinksText: '',
     categories: items.categories(),
     locationOptions: locations.allWithPath(),
     units: items.UNITS,
@@ -59,6 +61,7 @@ router.get('/items/:id/edit', (req, res) => {
   res.render('item-form', {
     title: `Edit ${item.name}`,
     item,
+    vendorLinksText: vendorLinks.toText(item.id),
     categories: items.categories(),
     locationOptions: locations.allWithPath(),
     units: items.UNITS,
@@ -73,6 +76,7 @@ router.get('/items/:id', (req, res) => {
     title: item.name,
     item,
     attrs: JSON.parse(item.attrs_json || '{}'),
+    vendorLinks: vendorLinks.forItem(item.id),
     photos: photosSvc.forItem(item.id),
     openCheckout: checkouts.openCheckoutForItem(item.id),
     checkoutHistory: checkouts.historyForItem(item.id, 5),

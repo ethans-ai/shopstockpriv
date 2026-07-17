@@ -13,14 +13,14 @@
         <div class="item-row-name"><%= item.name %></div>
         <div class="item-row-sub">
           <% if (item.part_number) { %><span class="pn"><%= item.part_number %></span><% } %>
-          <% if (item.supplier) { %><span><%= item.supplier %></span><% } %>
+          <% if (item.first_vendor_label) { %><span><%= item.first_vendor_label %></span><% } %>
           <% if (item.location_path) { %><span class="loc"><%= item.location_path %></span><% } %>
         </div>
       </a>
       <div class="item-row-side">
         <span class="qty qty-low"><%= item.quantity %> / <%= item.low_stock_threshold %> <%= item.unit %></span>
-        <% if (item.supplier_url) { %>
-          <a class="btn btn-sm" href="<%= item.supplier_url %>" target="_blank" rel="noopener">Reorder ↗</a>
+        <% if (item.first_vendor_url) { %>
+          <a class="btn btn-sm" href="<%= item.first_vendor_url %>" target="_blank" rel="noopener noreferrer">Reorder ↗</a>
         <% } %>
       </div>
     </div>

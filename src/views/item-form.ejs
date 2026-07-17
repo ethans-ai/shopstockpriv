@@ -82,15 +82,10 @@
     </label>
   </div>
 
-  <div class="form-row">
-    <label>Supplier
-      <input type="text" name="supplier" value="<%= item ? (item.supplier || '') : '' %>"
-             placeholder="McMaster, Summit, Mouser…">
-    </label>
-    <label>Supplier URL
-      <input type="url" name="supplier_url" value="<%= item ? (item.supplier_url || '') : '' %>">
-    </label>
-  </div>
+  <label>Vendor links <small>(one per line, "Vendor: URL" — e.g. "McMaster: https://mcmaster.com/91290A115". A bare URL works too. Edit freely as vendors change.)</small>
+    <textarea name="vendor_links_text" rows="3"
+              placeholder="McMaster: https://www.mcmaster.com/91290A115&#10;Mouser: https://www.mouser.com/ProductDetail/DT04-2P"><%= vendorLinksText %></textarea>
+  </label>
 
   <label>Extra attributes <small>(one per line, "key: value" — e.g. "Thread: 9/16-18" or "Series: DTM")</small>
     <textarea name="attrs_text" rows="3"><% if (item) {

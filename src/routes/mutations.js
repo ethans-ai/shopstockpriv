@@ -98,6 +98,22 @@ router.post('/items/:id/checkin', (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.post('/items/:id/vendor-links', (req, res, next) => {
+  try {
+    const vendorLinks = require('../services/vendorLinks');
+    vendorLinks.add(Number(req.params.id), req.body.label, req.body.url, who(req));
+    res.redirect(`/items/${req.params.id}`);
+  } catch (err) { next(err); }
+});
+
+router.post('/vendor-links/:id/delete', (req, res, next) => {
+  try {
+    const vendorLinks = require('../services/vendorLinks');
+    const itemId = vendorLinks.remove(Number(req.params.id), who(req));
+    res.redirect(`/items/${itemId}`);
+  } catch (err) { next(err); }
+});
+
 router.post('/items/:id/photos', upload.single('photo'), async (req, res, next) => {
   try {
     if (!req.file) throw new Error('No photo selected');

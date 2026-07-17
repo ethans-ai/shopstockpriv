@@ -13,6 +13,9 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src', 'views'));
 app.use(express.urlencoded({ extended: true }));
+// Express 5 leaves req.body undefined when no body was parsed — normalize so
+// route handlers can always read optional fields safely
+app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/photos', express.static(path.join(cfg.dataDir, 'photos'), {
   maxAge: '30d', immutable: true

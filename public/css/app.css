@@ -217,6 +217,13 @@ legend { font-size: 0.85rem; color: var(--muted); padding: 0 6px; }
 .add-inline { margin: 14px 0; }
 .add-inline summary { cursor: pointer; }
 
+/* Vendor links */
+.vendor-link-list { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.vendor-link { display: inline-flex; gap: 4px; align-items: center; }
+.vendor-link-x button { padding: 5px 8px; }
+.vendor-add-form { flex-wrap: wrap; }
+.vendor-add-form input[name=url] { flex: 1; min-width: 220px; }
+
 /* Label picker */
 .picker-results { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
 .picker-row {

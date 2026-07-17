@@ -1,6 +1,7 @@
 const { get } = require('../db');
 const { newShortcode } = require('./shortcodes');
 const activity = require('./activity');
+const vendorLinks = require('./vendorLinks');
 
 const UNITS = ['ea', 'ft', 'm', 'in', 'box', 'roll', 'pk', 'set', 'pr', 'L', 'gal'];
 
@@ -11,7 +12,9 @@ const BASE_SELECT = `
          CASE WHEN l.path_cache = '' OR l.path_cache IS NULL THEN l.name
               ELSE l.path_cache || ' > ' || l.name END AS location_path,
          (SELECT filename FROM photos WHERE item_id = i.id AND is_primary = 1) AS primary_photo,
-         (SELECT COUNT(*) FROM checkouts co WHERE co.item_id = i.id AND co.checked_in_at IS NULL) AS is_checked_out
+         (SELECT COUNT(*) FROM checkouts co WHERE co.item_id = i.id AND co.checked_in_at IS NULL) AS is_checked_out,
+         (SELECT label FROM vendor_links v WHERE v.item_id = i.id ORDER BY v.sort_order, v.id LIMIT 1) AS first_vendor_label,
+         (SELECT url FROM vendor_links v WHERE v.item_id = i.id ORDER BY v.sort_order, v.id LIMIT 1) AS first_vendor_url
   FROM items i
   LEFT JOIN categories c ON c.id = i.category_id
   LEFT JOIN locations l ON l.id = i.location_id`;
@@ -60,8 +63,6 @@ function fieldsFromForm(body) {
       ? Number(body.low_stock_threshold) : null,
     manufacturer: (body.manufacturer || '').trim() || null,
     part_number: (body.part_number || '').trim() || null,
-    supplier: (body.supplier || '').trim() || null,
-    supplier_url: (body.supplier_url || '').trim() || null,
     attrs_json: JSON.stringify(parseAttrs(body.attrs_text))
   };
 }
@@ -74,13 +75,17 @@ function create(body, personName) {
     const info = db.prepare(
       `INSERT INTO items (shortcode, name, description, category_id, location_id, item_type,
                           quantity, unit, low_stock_threshold, manufacturer, part_number,
-                          supplier, supplier_url, attrs_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                          attrs_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(newShortcode(), f.name, f.description, f.category_id, f.location_id, f.item_type,
           f.quantity, f.unit, f.low_stock_threshold, f.manufacturer, f.part_number,
-          f.supplier, f.supplier_url, f.attrs_json);
-    activity.log('item', info.lastInsertRowid, 'create', { name: f.name }, personName);
-    return info.lastInsertRowid;
+          f.attrs_json);
+    const id = info.lastInsertRowid;
+    if (body.vendor_links_text !== undefined) {
+      vendorLinks.replaceAll(id, body.vendor_links_text, personName);
+    }
+    activity.log('item', id, 'create', { name: f.name }, personName);
+    return id;
   });
   return tx();
 }
@@ -93,12 +98,15 @@ function update(id, body, personName) {
     db.prepare(
       `UPDATE items SET name = ?, description = ?, category_id = ?, location_id = ?,
                         item_type = ?, quantity = ?, unit = ?, low_stock_threshold = ?,
-                        manufacturer = ?, part_number = ?, supplier = ?, supplier_url = ?,
+                        manufacturer = ?, part_number = ?,
                         attrs_json = ?, updated_at = datetime('now')
        WHERE id = ?`
     ).run(f.name, f.description, f.category_id, f.location_id, f.item_type, f.quantity,
-          f.unit, f.low_stock_threshold, f.manufacturer, f.part_number, f.supplier,
-          f.supplier_url, f.attrs_json, id);
+          f.unit, f.low_stock_threshold, f.manufacturer, f.part_number,
+          f.attrs_json, id);
+    if (body.vendor_links_text !== undefined) {
+      vendorLinks.replaceAll(id, body.vendor_links_text, personName);
+    }
     activity.log('item', id, 'update', { name: f.name }, personName);
   });
   tx();
