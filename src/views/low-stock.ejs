@@ -3,7 +3,7 @@
 <h1>Low stock <small class="count">(<%= items.length %>)</small></h1>
 
 <% if (!items.length) { %>
-  <p class="empty-state">✅ Nothing is below its low-stock threshold.</p>
+  <p class="empty-state"><%- include('partials/icon', { name: 'check' }) %>Nothing is below its low-stock threshold.</p>
 <% } %>
 
 <div class="item-list">
@@ -20,7 +20,7 @@
       <div class="item-row-side">
         <span class="qty qty-low"><%= item.quantity %> / <%= item.low_stock_threshold %> <%= item.unit %></span>
         <% if (item.first_vendor_url) { %>
-          <a class="btn btn-sm" href="<%= item.first_vendor_url %>" target="_blank" rel="noopener noreferrer">Reorder ↗</a>
+          <a class="btn btn-sm" href="<%= item.first_vendor_url %>" target="_blank" rel="noopener noreferrer">Reorder <%- include('partials/icon', { name: 'open' }) %></a>
         <% } %>
       </div>
     </div>

@@ -15,9 +15,9 @@
 <p class="hint"><%= subtreeCount %> item<%= subtreeCount === 1 ? '' : 's' %> in this location and below</p>
 
 <section class="item-actions">
-  <a class="btn btn-primary" href="/items/new?location_id=<%= loc.id %>">＋ Add item here</a>
-  <a class="btn" href="/labels/print?template=avery5160&ids=l<%= loc.id %>" target="_blank">🏷️ Print label</a>
-  <a class="btn" href="/labels/print?template=avery5160&location_id=<%= loc.id %>&include=both" target="_blank">🏷️ Label everything here</a>
+  <a class="btn btn-primary" href="/items/new?location_id=<%= loc.id %>"><%- include('partials/icon', { name: 'add' }) %> Add item here</a>
+  <a class="btn" href="/labels/print?template=avery5160&ids=l<%= loc.id %>" target="_blank"><%- include('partials/icon', { name: 'print' }) %> Print label</a>
+  <a class="btn" href="/labels/print?template=avery5160&location_id=<%= loc.id %>&include=both" target="_blank"><%- include('partials/icon', { name: 'print' }) %> Label everything here</a>
 </section>
 
 <% if (children.length) { %>
@@ -25,7 +25,7 @@
 <div class="loc-list">
   <% for (const l of children) { %>
     <a class="loc-row" href="/locations/<%= l.id %>">
-      <span class="loc-kind"><%= { room: '🏠', cabinet: '🗄️', shelf: '📚', bin: '🗑️', drawer: '📥', other: '📍' }[l.kind] || '📍' %></span>
+      <span class="loc-kind"><%- include('partials/icon', { name: ({ room: 'home', cabinet: 'cabinet', shelf: 'shelf', bin: 'bin', drawer: 'drawer' })[l.kind] || 'location' }) %></span>
       <span class="loc-name"><%= l.name %></span>
       <span class="loc-count"><%= l.itemCount %> items</span>
     </a>
@@ -34,7 +34,7 @@
 <% } %>
 
 <details class="add-inline">
-  <summary class="btn">＋ Add sub-location</summary>
+  <summary class="btn"><%- include('partials/icon', { name: 'add' }) %> Add sub-location</summary>
   <form method="post" action="/locations" class="stack-form">
     <input type="hidden" name="parent_id" value="<%= loc.id %>">
     <label>Name <input type="text" name="name" required placeholder="e.g. Shelf 3, Bin 12"></label>

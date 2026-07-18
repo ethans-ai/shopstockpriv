@@ -1,0 +1,7 @@
+<%# Fluent icon from the vendored sprite (public/img/icons.svg).
+    Locals: name = sprite symbol id (required); cls = extra svg classes;
+    label = accessible name (adds role=img + aria-label). Without label the
+    icon is decorative (aria-hidden). Keep this comment free of EJS tags. %>
+<svg class="icon<%= typeof cls !== 'undefined' && cls ? ' ' + cls : '' %>"<%
+  if (typeof label !== 'undefined' && label) { %> role="img" aria-label="<%= label %>"<% }
+  else { %> aria-hidden="true"<% } %> focusable="false"><use href="/img/icons.svg#<%= name %>"/></svg>

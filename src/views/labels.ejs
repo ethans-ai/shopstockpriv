@@ -11,8 +11,9 @@
   </label>
   <% if (!cfg.baseUrl) { %>
     <div class="flash flash-error" id="qr-warning" hidden>
-      ⚠️ <strong>Base URL is not set.</strong> QR codes printed now will point at localhost and
-      won't work from phones. <a href="/admin">Set it in Admin</a> first. (Barcodes are unaffected.)
+      <%- include('partials/icon', { name: 'warning' }) %>
+      <span><strong>Base URL is not set.</strong> QR codes printed now will point at localhost and
+      won't work from phones. <a href="/admin">Set it in Admin</a> first. (Barcodes are unaffected.)</span>
     </div>
   <% } %>
 
@@ -70,12 +71,25 @@
   const pickedEl = document.getElementById('label-picked');
   const idsEl = document.getElementById('label-ids');
 
+  // Sprite icon as a DOM node (names stay in text nodes — never innerHTML)
+  function iconEl(name) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS(NS, 'use');
+    use.setAttribute('href', '/img/icons.svg#' + name);
+    svg.appendChild(use);
+    return svg;
+  }
+
   function renderPicked() {
     pickedEl.innerHTML = '';
     for (const [id, name] of picked) {
       const chip = document.createElement('span');
       chip.className = 'chip chip-removable';
-      chip.textContent = name + ' ✕';
+      chip.textContent = name + ' ';
+      chip.appendChild(iconEl('dismiss'));
       chip.onclick = () => { picked.delete(id); renderPicked(); };
       pickedEl.appendChild(chip);
     }
@@ -95,7 +109,8 @@
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'picker-row';
-        row.textContent = '📦 ' + it.name + (it.part_number ? ' · ' + it.part_number : '');
+        row.appendChild(iconEl('box'));
+        row.appendChild(document.createTextNode(' ' + it.name + (it.part_number ? ' · ' + it.part_number : '')));
         row.onclick = () => { picked.set('i' + it.id, it.name); renderPicked(); };
         resultsEl.appendChild(row);
       }
@@ -103,7 +118,8 @@
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'picker-row';
-        row.textContent = '📍 ' + l.full_path;
+        row.appendChild(iconEl('location'));
+        row.appendChild(document.createTextNode(' ' + l.full_path));
         row.onclick = () => { picked.set('l' + l.id, l.name); renderPicked(); };
         resultsEl.appendChild(row);
       }

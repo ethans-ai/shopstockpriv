@@ -9,7 +9,7 @@
 <div class="loc-list">
   <% for (const l of roots) { %>
     <a class="loc-row" href="/locations/<%= l.id %>">
-      <span class="loc-kind"><%= { room: '🏠', cabinet: '🗄️', shelf: '📚', bin: '🗑️', drawer: '📥', other: '📍' }[l.kind] || '📍' %></span>
+      <span class="loc-kind"><%- include('partials/icon', { name: ({ room: 'home', cabinet: 'cabinet', shelf: 'shelf', bin: 'bin', drawer: 'drawer' })[l.kind] || 'location' }) %></span>
       <span class="loc-name"><%= l.name %></span>
       <span class="loc-count"><%= l.itemCount %> items</span>
     </a>
@@ -17,7 +17,7 @@
 </div>
 
 <details class="add-inline" <%= !roots.length ? 'open' : '' %>>
-  <summary class="btn btn-primary">＋ Add top-level location</summary>
+  <summary class="btn btn-primary"><%- include('partials/icon', { name: 'add' }) %> Add top-level location</summary>
   <form method="post" action="/locations" class="stack-form">
     <label>Name
       <input type="text" name="name" required placeholder="e.g. Dyno Cell 2 storage">

@@ -15,7 +15,7 @@
              placeholder="http://192.168.1.50:8340">
     </label>
     <% if (!config.baseUrl) { %>
-      <div class="flash flash-error">⚠️ Base URL is not set. QR labels printed now will not scan to working links.</div>
+      <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>Base URL is not set. QR labels printed now will not scan to working links.</div>
     <% } %>
     <button type="submit" class="btn btn-primary">Save</button>
   </form>

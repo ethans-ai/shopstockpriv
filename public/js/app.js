@@ -57,6 +57,21 @@
   document.addEventListener('htmx:afterSwap', (e) => fillHiddenFields(e.target));
 })();
 
+// Light/dark theme toggle. The header sets data-theme before first paint;
+// this just flips and persists it.
+(function () {
+  const KEY = 'shopstock_theme';
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem(KEY, next); } catch {}
+    });
+  });
+})();
+
 // USB barcode scanner wedge: scanners act as keyboards, "typing" the code very
 // fast and ending with Enter.
 //

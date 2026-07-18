@@ -3,7 +3,7 @@
   <div class="loc-list">
     <% for (const l of locationResults) { %>
       <a class="loc-row" href="/locations/<%= l.id %>">
-        <span class="loc-kind">📍</span>
+        <span class="loc-kind"><%- include('icon', { name: 'location' }) %></span>
         <span class="loc-name"><%= l.full_path %></span>
       </a>
     <% } %>

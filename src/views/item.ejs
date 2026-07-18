@@ -72,19 +72,19 @@
     <div class="vendor-link-list">
       <% for (const vl of vendorLinks) { %>
         <span class="vendor-link">
-          <a class="btn btn-sm" href="<%= vl.url %>" target="_blank" rel="noopener noreferrer">🛒 <%= vl.label %> ↗</a>
+          <a class="btn btn-sm" href="<%= vl.url %>" target="_blank" rel="noopener noreferrer"><%- include('partials/icon', { name: 'cart' }) %> <%= vl.label %> <%- include('partials/icon', { name: 'open' }) %></a>
           <form method="post" action="/vendor-links/<%= vl.id %>/delete" class="vendor-link-x"
                 data-label="<%= vl.label %>"
                 onsubmit="return confirm('Remove the ' + this.dataset.label + ' link?')">
             <input type="hidden" name="person_name_hidden" class="person-hidden">
-            <button type="submit" class="btn btn-sm btn-danger" title="Remove link">✕</button>
+            <button type="submit" class="btn btn-sm btn-danger" title="Remove <%= vl.label %> link" aria-label="Remove <%= vl.label %> link"><%- include('partials/icon', { name: 'dismiss' }) %></button>
           </form>
         </span>
       <% } %>
       <% if (!vendorLinks.length) { %><span class="hint">No vendor links yet.</span><% } %>
     </div>
     <details class="add-inline">
-      <summary>＋ Add vendor link</summary>
+      <summary><%- include('partials/icon', { name: 'add' }) %> Add vendor link</summary>
       <form method="post" action="/items/<%= item.id %>/vendor-links" class="inline-form vendor-add-form">
         <input type="text" name="label" placeholder="Vendor (optional, e.g. McMaster)">
         <input type="text" name="url" placeholder="Paste product URL" required>
@@ -95,10 +95,10 @@
   </section>
 
   <section class="item-actions">
-    <a class="btn" href="/items/<%= item.id %>/edit">✏️ Edit</a>
-    <a class="btn" href="/labels/print?template=avery5160&ids=i<%= item.id %>" target="_blank">🏷️ Print label</a>
+    <a class="btn" href="/items/<%= item.id %>/edit"><%- include('partials/icon', { name: 'edit' }) %> Edit</a>
+    <a class="btn" href="/labels/print?template=avery5160&ids=i<%= item.id %>" target="_blank"><%- include('partials/icon', { name: 'print' }) %> Print label</a>
     <details class="inline-details">
-      <summary class="btn">📍 Move</summary>
+      <summary class="btn"><%- include('partials/icon', { name: 'location' }) %> Move</summary>
       <form method="post" action="/items/<%= item.id %>/move" class="move-form">
         <select name="location_id" class="input">
           <option value="">— no location —</option>
@@ -118,7 +118,7 @@
           </a>
           <div class="photo-actions">
             <% if (!p.is_primary) { %>
-              <form method="post" action="/photos/<%= p.id %>/primary"><button class="btn btn-sm">★ primary</button></form>
+              <form method="post" action="/photos/<%= p.id %>/primary"><button class="btn btn-sm"><%- include('partials/icon', { name: 'star' }) %> primary</button></form>
             <% } %>
             <form method="post" action="/photos/<%= p.id %>/delete"
                   onsubmit="return confirm('Delete this photo?')">
@@ -130,7 +130,7 @@
       <% } %>
       <form method="post" action="/items/<%= item.id %>/photos" enctype="multipart/form-data" class="photo-add">
         <label class="photo-add-label">
-          📷 Add photo
+          <%- include('partials/icon', { name: 'camera' }) %> Add photo
           <input type="file" name="photo" accept="image/*" capture="environment"
                  onchange="this.form.submit()" hidden>
         </label>

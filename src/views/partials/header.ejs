@@ -4,23 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %> · <%= cfg.siteName %></title>
+  <script>
+    // Set theme before first paint (dark-first; toggle persists to localStorage).
+    (function () {
+      var t; try { t = localStorage.getItem('shopstock_theme'); } catch (e) {}
+      document.documentElement.dataset.theme = (t === 'light' || t === 'dark') ? t : 'dark';
+    })();
+  </script>
   <link rel="stylesheet" href="/css/app.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230078d4' d='M16.5 2a5.5 5.5 0 0 0-5.35 6.79l-8.3 8.31a2.87 2.87 0 1 0 4.05 4.06l8.31-8.31a5.51 5.51 0 0 0 6.5-7.1.75.75 0 0 0-1.23-.29l-2.45 2.45c-.3.29-.77.29-1.06 0l-.88-.88a.75.75 0 0 1 0-1.06l2.45-2.45a.75.75 0 0 0-.3-1.24A5.5 5.5 0 0 0 16.5 2Z'/></svg>">
   <script src="/js/htmx.min.js" defer></script>
   <script src="/js/app.js" defer></script>
 </head>
 <body>
 <header class="topbar">
-  <a href="/" class="brand">🔧 <%= cfg.siteName %></a>
+  <a href="/" class="brand"><%- include('icon', { name: 'wrench' }) %><%= cfg.siteName %></a>
   <nav class="topnav">
-    <a href="/locations" class="<%= currentPath.startsWith('/locations') ? 'active' : '' %>">Locations</a>
+    <a href="/locations" class="<%= currentPath.startsWith('/locations') ? 'active' : '' %>">
+      <%- include('icon', { name: 'location' }) %>Locations</a>
     <a href="/low-stock" class="<%= currentPath === '/low-stock' ? 'active' : '' %>">
-      Low stock<% if (lowStockCount > 0) { %><span class="badge badge-warn"><%= lowStockCount %></span><% } %>
+      <%- include('icon', { name: 'alert' }) %>Low stock<% if (lowStockCount > 0) { %><span class="badge badge-warn"><%= lowStockCount %></span><% } %>
     </a>
     <a href="/checkouts" class="<%= currentPath === '/checkouts' ? 'active' : '' %>">
-      Out<% if (openCheckoutCount > 0) { %><span class="badge"><%= openCheckoutCount %></span><% } %>
+      <%- include('icon', { name: 'toolbox' }) %>Out<% if (openCheckoutCount > 0) { %><span class="badge"><%= openCheckoutCount %></span><% } %>
     </a>
-    <a href="/labels" class="<%= currentPath === '/labels' ? 'active' : '' %>">Labels</a>
+    <a href="/labels" class="<%= currentPath === '/labels' ? 'active' : '' %>">
+      <%- include('icon', { name: 'tag' }) %>Labels</a>
   </nav>
+  <span class="topbar-spacer"></span>
+  <button type="button" id="theme-toggle" class="icon-btn" aria-label="Switch between light and dark theme" title="Switch theme">
+    <%- include('icon', { name: 'sun', cls: 'theme-icon-sun' }) %>
+    <%- include('icon', { name: 'moon', cls: 'theme-icon-moon' }) %>
+  </button>
 </header>
 <main class="container">

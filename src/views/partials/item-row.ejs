@@ -2,7 +2,7 @@
   <% if (item.primary_photo) { %>
     <img class="item-thumb" src="/photos/thumbs/<%= item.primary_photo %>" alt="" loading="lazy">
   <% } else { %>
-    <div class="item-thumb item-thumb-empty">📦</div>
+    <div class="item-thumb item-thumb-empty"><%- include('icon', { name: 'box' }) %></div>
   <% } %>
   <div class="item-row-main">
     <div class="item-row-name"><%= item.name %></div>

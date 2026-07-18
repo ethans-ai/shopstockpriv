@@ -1,5 +1,5 @@
 <%- include('partials/header') %>
 <h1>Error</h1>
 <div class="flash flash-error"><%= message %></div>
-<p><a href="javascript:history.back()" class="btn">← Go back</a></p>
+<p><a href="javascript:history.back()" class="btn"><%- include('partials/icon', { name: 'back' }) %> Go back</a></p>
 <%- include('partials/footer') %>

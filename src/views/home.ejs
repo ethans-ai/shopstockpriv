@@ -7,7 +7,7 @@
          hx-params="*">
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
-<p class="hint">📷 Barcode scanner ready — scan any label from anywhere in the app to jump to that item.</p>
+<p class="hint"><%- include('partials/icon', { name: 'scanner' }) %> Barcode scanner ready — scan any label from anywhere in the app to jump to that item.</p>
 <div id="live-results"></div>
 
 <h2>Categories</h2>
@@ -21,8 +21,8 @@
 </div>
 
 <div class="home-actions">
-  <a href="/locations" class="btn btn-block">📍 Browse locations</a>
-  <a href="/items/new" class="btn btn-block btn-primary">＋ Add item</a>
+  <a href="/locations" class="btn btn-block"><%- include('partials/icon', { name: 'location' }) %> Browse locations</a>
+  <a href="/items/new" class="btn btn-block btn-primary"><%- include('partials/icon', { name: 'add' }) %> Add item</a>
 </div>
 
 <%- include('partials/footer') %>
