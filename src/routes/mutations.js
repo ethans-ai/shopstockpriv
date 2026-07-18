@@ -5,6 +5,7 @@ const locations = require('../services/locations');
 const checkouts = require('../services/checkouts');
 const photos = require('../services/photos');
 const config = require('../config');
+const auth = require('../services/auth');
 
 const router = express.Router();
 const upload = multer({
@@ -165,13 +166,62 @@ router.post('/locations/:id/delete', (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/admin/config', (req, res, next) => {
+router.post('/admin/config', auth.requireAdmin, (req, res, next) => {
   try {
     config.save({
       baseUrl: (req.body.baseUrl || '').trim().replace(/\/+$/, ''),
       siteName: (req.body.siteName || 'ShopStock').trim()
     });
     res.redirect('/admin?saved=1');
+  } catch (err) { next(err); }
+});
+
+router.post('/admin/unlock', (req, res, next) => {
+  try {
+    // Trim to match how the set/change forms store the PIN — a pasted
+    // trailing space must not read as a wrong PIN (and eat the cooldown)
+    const result = auth.unlock((req.body.pin || '').trim());
+    if (result === 'blocked') return res.redirect('/admin?auth=blocked');
+    if (!result) return res.redirect('/admin?auth=badpin');
+    auth.setCookie(res, result);
+    res.redirect('/admin?auth=unlocked');
+  } catch (err) { next(err); }
+});
+
+router.post('/admin/lock', (req, res, next) => {
+  try {
+    auth.lock(req);
+    auth.clearCookie(res);
+    res.redirect('/admin?auth=lockednow');
+  } catch (err) { next(err); }
+});
+
+// Set the first PIN (open while none exists — same trust as today's open
+// station) or change it (always requires the current PIN, unlocked or not).
+router.post('/admin/pin', (req, res, next) => {
+  try {
+    const cfg = config.load();
+    const pin = (req.body.pin || '').trim();
+    const confirm = (req.body.pin_confirm || '').trim();
+    if (pin.length < 4) return res.redirect('/admin?auth=pinshort');
+    if (pin !== confirm) return res.redirect('/admin?auth=pinmismatch');
+    if (auth.pinSet(cfg)) {
+      if (auth.attemptsBlocked()) return res.redirect('/admin?auth=blocked');
+      const current = (req.body.pin_current || '').trim();
+      // Route the check through unlock() so wrong "current PIN" guesses count
+      // toward the same attempt cooldown as the unlock form
+      const ok = auth.unlock(current);
+      if (ok === 'blocked') return res.redirect('/admin?auth=blocked');
+      if (!ok) return res.redirect('/admin?auth=badpin');
+      // Rotating the PIN revokes every existing unlock — a session opened
+      // under the old (possibly compromised) PIN must not survive it
+      auth.revokeAll();
+    }
+    config.save({ adminPinHash: auth.hashPin(pin) });
+    // Whoever just proved (or first set) the PIN is unlocked — don't greet
+    // them with a locked page for the settings they came to change
+    auth.setCookie(res, auth.issueSession());
+    res.redirect('/admin?auth=pinset');
   } catch (err) { next(err); }
 });
 
@@ -186,7 +236,7 @@ router.post('/admin/categories', (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/admin/backup-config', async (req, res, next) => {
+router.post('/admin/backup-config', auth.requireAdmin, async (req, res, next) => {
   try {
     // IT-pasted paths often arrive wrapped in quotes — strip them
     const dest = (req.body.backupDest || '').trim().replace(/^"(.*)"$/, '$1').trim();

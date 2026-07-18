@@ -99,6 +99,21 @@ restored database gets replayed into it and corrupts it.** If you must restore
 manually, delete `data\shopstock.db`, `-wal`, and `-shm` first, then unzip the
 backup into `data\`.
 
+### Admin PIN (optional but recommended)
+
+Set an admin PIN on `/admin` (Admin PIN section). Once set, **server config
+and backup settings** require unlocking with the PIN; the unlock re-locks
+itself after ~10 minutes without an admin action. Everything else — scanning,
+quantities, checkouts, adding items, printing — stays open; the station is
+still walk-up zero-friction.
+
+The PIN is stored as a salted scrypt hash in `config.json` (`adminPinHash`),
+never in plain text, and is deliberately left out of backup zips. Wrong-PIN
+attempts are rate-limited (5 tries, then a cooldown that doubles with each
+lockout). Changing the PIN signs out every unlocked browser. **Lost PIN:**
+stop the server, delete the `adminPinHash` line from `config.json`, start
+again — the app is back to open, set a new PIN.
+
 ---
 
 ## Mode 2 — LAN server (phones + QR labels)
@@ -106,16 +121,19 @@ backup into `data\`.
 Only if/when IT is on board. Needs an inbound firewall rule and a static
 IP/DHCP reservation **before printing QR labels** (printed URLs are permanent).
 
-1. **Set `"bindHost": "0.0.0.0"` in `config.json`** and restart the server —
+1. **Set an admin PIN on `/admin` first** — setting the *first* PIN is open
+   to whoever gets there first, which is fine on a locked single PC but not
+   once the whole network can reach the app. Do this before flipping bindHost.
+2. **Set `"bindHost": "0.0.0.0"` in `config.json`** and restart the server —
    without this the server only listens on 127.0.0.1 and no other device can
    connect, no matter what the firewall allows.
-2. `New-NetFirewallRule -DisplayName "ShopStock" -Direction Inbound -LocalPort 8340 -Protocol TCP -Action Allow -Profile Domain,Private` (elevated)
-3. Set the Base URL on `/admin` to `http://<static-ip>:8340`.
-4. Install as a service so it survives reboots: `scripts\install-service.ps1`
+3. `New-NetFirewallRule -DisplayName "ShopStock" -Direction Inbound -LocalPort 8340 -Protocol TCP -Action Allow -Profile Domain,Private` (elevated)
+4. Set the Base URL on `/admin` to `http://<static-ip>:8340`.
+5. Install as a service so it survives reboots: `scripts\install-service.ps1`
    (uses NSSM, elevated).
-5. Test phone → PC reachability before printing labels. If it fails, check
-   bindHost first (step 1), then corporate Wi-Fi client isolation / guest VLAN.
-6. Print QR labels (code type dropdown on `/labels`). Phones scan with the
+6. Test phone → PC reachability before printing labels. If it fails, check
+   bindHost first (step 2), then corporate Wi-Fi client isolation / guest VLAN.
+7. Print QR labels (code type dropdown on `/labels`). Phones scan with the
    native camera app — no app install needed.
 
 Both modes can coexist: a LAN deployment still works with the USB scanner, and

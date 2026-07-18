@@ -383,6 +383,15 @@ input[type="radio"], input[type="checkbox"] { accent-color: var(--accent); }
 /* ---------- Lists, misc ---------- */
 
 .plain-list { padding-left: 1.2em; margin: 6px 0; }
+.admin-lockbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--line-strong);
+  border-radius: var(--radius); padding: 10px 14px; margin: 14px 0;
+}
+.admin-lockbar .icon { color: var(--accent); flex: none; }
+.admin-lockbar .inline-form { margin: 0; }
+.stack-form fieldset { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.stack-form fieldset[disabled] { opacity: 0.55; }
 .backup-runs { list-style: none; padding-left: 0; }
 .backup-runs li { padding: 5px 0; font-size: 0.85rem; border-bottom: 1px solid var(--line); }
 .backup-runs li:last-child { border-bottom: none; }

@@ -4,9 +4,50 @@
 
 <% if (saved) { %><div class="flash flash-ok">Saved.</div><% } %>
 
+<% const authLocked = auth.pinSet && !auth.unlocked; %>
+<%# State-dependent flashes only render when they match reality — a stale
+    ?auth=unlocked URL on a since-relocked page must not claim it's open %>
+<% if (auth.flash === 'locked' && authLocked) { %>
+  <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>That change was <strong>not saved</strong> — it needs the admin PIN. Unlock below, then make the change again.</div>
+<% } else if (auth.flash === 'unlocked' && auth.unlocked) { %>
+  <div class="flash flash-ok"><%- include('partials/icon', { name: 'check' }) %>Admin unlocked. Re-locks after <%= auth.idleMinutes %> minutes without an admin action.</div>
+<% } else if (auth.flash === 'lockednow' && authLocked) { %>
+  <div class="flash flash-ok"><%- include('partials/icon', { name: 'check' }) %>Locked.</div>
+<% } else if (auth.flash === 'badpin') { %>
+  <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>Wrong PIN.</div>
+<% } else if (auth.flash === 'blocked') { %>
+  <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>Too many wrong PINs — try again in about <%= Math.max(auth.blockedForSec, 5) %> seconds. Repeated lockouts wait longer each time.</div>
+<% } else if (auth.flash === 'pinset') { %>
+  <div class="flash flash-ok"><%- include('partials/icon', { name: 'check' }) %>Admin PIN saved. Server config and backup settings now need it — you're unlocked on this browser.</div>
+<% } else if (auth.flash === 'pinshort') { %>
+  <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>PIN must be at least 4 characters.</div>
+<% } else if (auth.flash === 'pinmismatch') { %>
+  <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>The two PIN entries didn't match.</div>
+<% } %>
+
+<% if (authLocked) { %>
+  <div class="admin-lockbar">
+    <%- include('partials/icon', { name: 'settings' }) %>
+    <span>Server config and backup settings are locked.</span>
+    <form method="post" action="/admin/unlock" class="inline-form">
+      <input type="password" name="pin" placeholder="Admin PIN" autocomplete="off" required>
+      <button type="submit" class="btn btn-primary">Unlock</button>
+    </form>
+  </div>
+<% } else if (auth.pinSet) { %>
+  <div class="admin-lockbar">
+    <%- include('partials/icon', { name: 'check' }) %>
+    <span>Admin unlocked — re-locks after <%= auth.idleMinutes %> min without an admin action.</span>
+    <form method="post" action="/admin/lock" class="inline-form">
+      <button type="submit" class="btn">Lock now</button>
+    </form>
+  </div>
+<% } %>
+
 <section>
   <h2>Server config</h2>
   <form method="post" action="/admin/config" class="stack-form">
+    <fieldset <%= authLocked ? 'disabled' : '' %>>
     <label>Site name
       <input type="text" name="siteName" value="<%= config.siteName %>">
     </label>
@@ -18,6 +59,7 @@
       <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>Base URL is not set. QR labels printed now will not scan to working links.</div>
     <% } %>
     <button type="submit" class="btn btn-primary">Save</button>
+    </fieldset>
   </form>
   <p class="hint">Port (<%= config.port %>) and data directory are set in <code>config.json</code> and need a restart to change.</p>
 </section>
@@ -79,6 +121,7 @@
   <% } %>
 
   <form method="post" action="/admin/backup-config" class="stack-form">
+    <fieldset <%= authLocked ? 'disabled' : '' %>>
     <label>Backup destination folder <small>(network share, UNC path, or second drive — whatever IT provides; leave blank until decided)</small>
       <input type="text" name="backupDest" value="<%= config.backupDest %>"
              placeholder="\\fileserver\share\shopstock-backups">
@@ -90,6 +133,7 @@
       <input type="number" name="backupKeepDays" value="<%= config.backupKeepDays %>" min="0" step="any">
     </label>
     <button type="submit" class="btn btn-primary">Save backup settings</button>
+    </fieldset>
   </form>
 
   <form method="post" action="/admin/backup" class="inline-form">
@@ -107,6 +151,36 @@
         </li>
       <% } %>
     </ul>
+  <% } %>
+</section>
+
+<section>
+  <h2>Admin PIN</h2>
+  <% if (!auth.pinSet) { %>
+    <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>No admin PIN is set — anyone at this PC can change server config and backup settings. Set one to lock those down (everyday use — scanning, quantities, checkouts — stays open either way).</div>
+    <form method="post" action="/admin/pin" class="stack-form">
+      <label>New PIN <small>(at least 4 characters; digits are fine — longer is better, especially if the app ever serves the network)</small>
+        <input type="password" name="pin" autocomplete="new-password" required minlength="4">
+      </label>
+      <label>Confirm PIN
+        <input type="password" name="pin_confirm" autocomplete="new-password" required minlength="4">
+      </label>
+      <button type="submit" class="btn btn-primary">Set admin PIN</button>
+    </form>
+  <% } else { %>
+    <p class="hint">Changing the PIN always requires the current one. Lost PIN: stop the server and delete the <code>adminPinHash</code> line from <code>config.json</code>.</p>
+    <form method="post" action="/admin/pin" class="stack-form">
+      <label>Current PIN
+        <input type="password" name="pin_current" autocomplete="off" required>
+      </label>
+      <label>New PIN <small>(at least 4 characters)</small>
+        <input type="password" name="pin" autocomplete="new-password" required minlength="4">
+      </label>
+      <label>Confirm new PIN
+        <input type="password" name="pin_confirm" autocomplete="new-password" required minlength="4">
+      </label>
+      <button type="submit" class="btn">Change PIN</button>
+    </form>
   <% } %>
 </section>
 

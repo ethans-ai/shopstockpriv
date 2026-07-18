@@ -169,6 +169,7 @@ function fmtRun(r) {
 
 router.get('/admin', (req, res) => {
   const backupSvc = require('../services/backup');
+  const auth = require('../services/auth');
   const cfg = config.load();
   const usage = photosSvc.diskUsage();
   const db = require('../db').get();
@@ -206,7 +207,14 @@ router.get('/admin', (req, res) => {
     },
     backupFlash: req.query.backup || null,          // 'done' | 'busy'
     destProbe: req.query.dest || null,              // 'ok' | 'err'
-    destProbeMsg: req.query.destmsg || ''
+    destProbeMsg: req.query.destmsg || '',
+    auth: {
+      pinSet: auth.pinSet(cfg),
+      unlocked: auth.isUnlocked(req),
+      idleMinutes: Math.round(auth.IDLE_MS / 60000),
+      blockedForSec: Math.ceil(auth.blockedForMs() / 1000),
+      flash: req.query.auth || null   // locked|unlocked|lockednow|badpin|blocked|pinset|pinshort|pinmismatch
+    }
   });
 });
 

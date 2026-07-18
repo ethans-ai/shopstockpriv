@@ -152,8 +152,11 @@ async function run(source) {
         locations: d.prepare('SELECT COUNT(*) AS n FROM locations').get().n,
         photos: d.prepare('SELECT COUNT(*) AS n FROM photos').get().n
       },
-      // Settings snapshot so a from-scratch PC rebuild can be reconstructed
-      config: cfg
+      // Settings snapshot so a from-scratch PC rebuild can be reconstructed.
+      // adminPinHash stays out: backup zips live on a multi-reader share, and
+      // a short PIN's scrypt hash cracks offline in minutes (a rebuilt PC
+      // just sets a fresh PIN).
+      config: { ...cfg, adminPinHash: undefined }
     }, null, 2));
 
     stagePhotos(path.join(cfg.dataDir, 'photos'), path.join(staging, 'photos'));

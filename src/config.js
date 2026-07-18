@@ -17,7 +17,10 @@ const defaults = {
   // scheduler stays off. Set it on /admin; no code edit or restart needed.
   backupDest: '',
   backupIntervalHours: 24,  // 0 disables the in-app scheduler
-  backupKeepDays: 30        // 0 keeps backups forever
+  backupKeepDays: 30,       // 0 keeps backups forever
+  // scrypt salt:hash of the admin PIN ('' = no PIN set, nothing gated).
+  // Set from /admin, never hand-edited; delete the line to reset a lost PIN.
+  adminPinHash: ''
 };
 
 function load() {
