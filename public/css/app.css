@@ -383,6 +383,14 @@ input[type="radio"], input[type="checkbox"] { accent-color: var(--accent); }
 /* ---------- Lists, misc ---------- */
 
 .plain-list { padding-left: 1.2em; margin: 6px 0; }
+.backup-runs { list-style: none; padding-left: 0; }
+.backup-runs li { padding: 5px 0; font-size: 0.85rem; border-bottom: 1px solid var(--line); }
+.backup-runs li:last-child { border-bottom: none; }
+.backup-runs .icon { margin-right: 6px; }
+.backup-runs .run-ok .icon { color: var(--ok); }
+.backup-runs .run-fail .icon { color: var(--danger); }
+.backup-runs .run-error { color: var(--danger); }
+.backup-path { word-break: break-all; }
 .activity-list { list-style: none; padding: 0; }
 .activity-list li { padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
 .activity-time { color: var(--muted); font-size: 0.78rem; margin-right: 8px; font-family: "Cascadia Mono", Consolas, monospace; }

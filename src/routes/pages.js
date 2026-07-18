@@ -144,10 +144,45 @@ router.get('/activity', (req, res) => {
   res.render('activity', { title: 'Activity', entries: activity.recent(100) });
 });
 
+// Human-friendly age for the backup health panel ("3 h ago"). The server and
+// the person reading this run on the same PC, so local time is correct.
+function ago(iso) {
+  const ms = Date.now() - Date.parse(iso);
+  if (ms < 90 * 1000) return 'just now';
+  const min = Math.round(ms / 60000);
+  if (min < 90) return `${min} min ago`;
+  const h = Math.round(min / 60);
+  if (h < 36) return `${h} h ago`;
+  return `${Math.round(h / 24)} days ago`;
+}
+
+function fmtRun(r) {
+  return {
+    ...r,
+    whenText: new Date(r.finished_at).toLocaleString(),
+    agoText: ago(r.finished_at),
+    sizeText: r.bytes == null ? null
+      : r.bytes < 1048576 ? Math.max(1, Math.round(r.bytes / 1024)) + ' KB'
+      : (r.bytes / 1048576).toFixed(1) + ' MB'
+  };
+}
+
 router.get('/admin', (req, res) => {
+  const backupSvc = require('../services/backup');
   const cfg = config.load();
   const usage = photosSvc.diskUsage();
   const db = require('../db').get();
+
+  const lastOk = backupSvc.lastOk();
+  const schedule = backupSvc.scheduleInfo(cfg);
+  let nextDueText = null;
+  if (schedule.mode === 'scheduled') {
+    nextDueText = schedule.dueAtMs > Date.now()
+      ? new Date(schedule.dueAtMs).toLocaleString() +
+        (schedule.retrying ? ' (waiting out a failed attempt)' : '')
+      : 'overdue — runs within a few minutes while the app is open';
+  }
+
   res.render('admin', {
     title: 'Admin',
     config: cfg,
@@ -160,7 +195,18 @@ router.get('/admin', (req, res) => {
     },
     categories: items.categories(),
     saved: req.query.saved === '1',
-    backupResult: null
+    backup: {
+      configured: backupSvc.isConfigured(cfg),
+      running: backupSvc.isRunning(),
+      lastOk: lastOk ? fmtRun(lastOk) : null,
+      lastRun: backupSvc.lastRun() ? fmtRun(backupSvc.lastRun()) : null,
+      runs: backupSvc.lastRuns(5).map(fmtRun),
+      nextDueText,
+      localDir: backupSvc.localFallbackDir(cfg)
+    },
+    backupFlash: req.query.backup || null,          // 'done' | 'busy'
+    destProbe: req.query.dest || null,              // 'ok' | 'err'
+    destProbeMsg: req.query.destmsg || ''
   });
 });
 

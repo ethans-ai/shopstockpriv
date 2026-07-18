@@ -60,6 +60,8 @@ function escapeHtml(s) {
 }
 
 app.listen(cfg.port, cfg.bindHost, () => {
+  // Automatic off-PC backups (no-op until a destination is configured on /admin)
+  require('./src/services/backup').startScheduler();
   console.log(`ShopStock running at http://localhost:${cfg.port}`);
   if (cfg.bindHost === '127.0.0.1' || cfg.bindHost === 'localhost') {
     console.log('Single-station mode: only this PC can reach the app (bindHost = 127.0.0.1).');

@@ -186,18 +186,46 @@ router.post('/admin/categories', (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.post('/admin/backup-config', async (req, res, next) => {
+  try {
+    // IT-pasted paths often arrive wrapped in quotes — strip them
+    const dest = (req.body.backupDest || '').trim().replace(/^"(.*)"$/, '$1').trim();
+    const num = (v, dflt) => {
+      const n = Number(v);
+      return v === '' || v === undefined || !Number.isFinite(n) || n < 0 ? dflt : n;
+    };
+    config.save({
+      backupDest: dest,
+      backupIntervalHours: num(req.body.backupIntervalHours, 24),
+      backupKeepDays: num(req.body.backupKeepDays, 30)
+    });
+    // Immediate reachability feedback (catches typo'd UNC paths). A failed
+    // probe still saves — the share may simply be offline right now. Async fs
+    // throughout: sync calls on a dead UNC block the event loop for the whole
+    // SMB timeout.
+    let probe = '';
+    if (dest) {
+      try {
+        const fsp = require('fs/promises');
+        const path = require('path');
+        await fsp.mkdir(dest, { recursive: true });
+        const p = path.join(dest, '.shopstock-write-test');
+        await fsp.writeFile(p, 'ok');
+        await fsp.rm(p, { force: true });
+        probe = '&dest=ok';
+      } catch (err) {
+        probe = '&dest=err&destmsg=' + encodeURIComponent(String(err.message || err).slice(0, 200));
+      }
+    }
+    res.redirect('/admin?saved=1' + probe);
+  } catch (err) { next(err); }
+});
+
 router.post('/admin/backup', async (req, res, next) => {
   try {
-    const path = require('path');
-    const fs = require('fs');
-    const cfg = config.load();
-    const db = require('../db').get();
-    const backupDir = path.join(cfg.dataDir, 'backups');
-    fs.mkdirSync(backupDir, { recursive: true });
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const dest = path.join(backupDir, `shopstock-${stamp}.db`);
-    await db.backup(dest);
-    res.redirect('/admin?saved=1');
+    const backup = require('../services/backup');
+    const result = await backup.run('manual');
+    res.redirect(result.busy ? '/admin?backup=busy' : '/admin?backup=done');
   } catch (err) { next(err); }
 });
 

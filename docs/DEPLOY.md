@@ -55,21 +55,49 @@ jumps to the scanned item/location. Print labels from `/labels` with code type
 **Barcode (Code 128)**. Run the ruler calibration page (`/admin`) once per
 printer before a big label batch.
 
-### Backups (still worth doing on a single PC)
+### Backups (protect against losing this PC)
 
-Schedule daily in Task Scheduler (works per-user, no admin):
+**Built in — set it up once on `/admin`:** enter a backup destination folder
+(a network share / UNC path like `\\fileserver\share\shopstock-backups`, or a
+second drive) and the app backs itself up automatically while it is running —
+by default every 24 h, keeping 30 days of zips. Each backup is a single zip
+holding a consistent database snapshot (safe while the app is in use), all
+photos, and a manifest. The Backups panel on `/admin` shows the last good
+backup, its size, and any errors (e.g. share offline — the app keeps running
+and retries).
+
+Ask IT for any folder this PC's user account can write to; paste it on
+`/admin`, save (reachability is checked immediately), then click **Back up
+now** once to verify end-to-end. Until a destination is configured, manual
+backups land in `data\backups` on the same PC — better than nothing, but they
+do not survive losing the machine.
+
+**Alternative (app not running / belt-and-braces):** schedule
+`scripts\backup.ps1` daily in Task Scheduler (works per-user, no admin):
 
 ```
 Program:   powershell
-Arguments: -NoProfile -ExecutionPolicy Bypass -File C:\shopstock\scripts\backup.ps1 -Dest "D:\shopstock-backups"
+Arguments: -NoProfile -ExecutionPolicy Bypass -File C:\shopstock\scripts\backup.ps1 -Dest "\\fileserver\share\shopstock-backups"
 ```
 
-Point `-Dest` at a network share or second drive if available. The script uses
-the SQLite backup API (safe while the app runs) and zips photos alongside.
+Both zips restore the same way with `scripts\restore.ps1` (the in-app zip
+additionally carries a `manifest.json` with counts and a settings snapshot).
 
-**Restore:** stop the server, then **delete `data\shopstock.db`, `data\shopstock.db-wal`,
-and `data\shopstock.db-shm`** (a stale `-wal` file left in place would be replayed
-into the restored database and corrupt it), unzip the backup into `data\`, start again.
+### Restore
+
+With the server **stopped** (close its console window):
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\restore.ps1 -Zip "\\fileserver\share\shopstock-backups\shopstock-2026-07-17_0200.zip"
+```
+
+The script refuses to run while the server is up, validates the zip, moves the
+old `shopstock.db*` files aside into `data\pre-restore-<stamp>\` (kept until
+you delete them), and merges photos back in. It exists because of a real trap
+in doing it by hand: **a stale `data\shopstock.db-wal` file left next to a
+restored database gets replayed into it and corrupts it.** If you must restore
+manually, delete `data\shopstock.db`, `-wal`, and `-shm` first, then unzip the
+backup into `data\`.
 
 ---
 

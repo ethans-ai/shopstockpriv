@@ -10,7 +10,14 @@ const defaults = {
   bindHost: '127.0.0.1',
   baseUrl: '',            // for LAN mode QR labels, e.g. "http://192.168.1.50:8340"
   dataDir: path.join(__dirname, '..', 'data'),
-  siteName: 'ShopStock'
+  siteName: 'ShopStock',
+  // Off-PC backup destination (network share / UNC path / second drive).
+  // Blank until the user's IT department decides where backups should live —
+  // manual backups then fall back to data/backups on this PC and the
+  // scheduler stays off. Set it on /admin; no code edit or restart needed.
+  backupDest: '',
+  backupIntervalHours: 24,  // 0 disables the in-app scheduler
+  backupKeepDays: 30        // 0 keeps backups forever
 };
 
 function load() {
@@ -18,11 +25,18 @@ function load() {
   if (fs.existsSync(CONFIG_PATH)) {
     fileCfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
   }
-  // Blank values fall back to defaults (baseUrl is legitimately blank until configured)
-  for (const key of ['port', 'bindHost', 'dataDir', 'siteName']) {
+  // Blank values fall back to defaults (baseUrl and backupDest are
+  // legitimately blank until configured)
+  for (const key of ['port', 'bindHost', 'dataDir', 'siteName', 'backupIntervalHours', 'backupKeepDays']) {
     if (fileCfg[key] === '' || fileCfg[key] === null || fileCfg[key] === undefined) delete fileCfg[key];
   }
-  return { ...defaults, ...fileCfg };
+  const cfg = { ...defaults, ...fileCfg };
+  // Hand-edited config.json may hold strings/garbage for the numeric knobs
+  for (const key of ['backupIntervalHours', 'backupKeepDays']) {
+    const n = Number(cfg[key]);
+    cfg[key] = Number.isFinite(n) && n >= 0 ? n : defaults[key];
+  }
+  return cfg;
 }
 
 function save(updates) {

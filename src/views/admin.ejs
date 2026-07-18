@@ -44,11 +44,70 @@
 </section>
 
 <section>
-  <h2>Backup</h2>
-  <p class="hint">Creates a consistent snapshot of the database in <code>data/backups/</code>. Photos are plain files in <code>data/photos/</code> — back up the whole <code>data</code> folder to be safe.</p>
-  <form method="post" action="/admin/backup">
-    <button type="submit" class="btn">Backup database now</button>
+  <h2>Backups</h2>
+
+  <% if (backupFlash === 'busy') { %>
+    <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>A backup is already running — give it a moment.</div>
+  <% } else if (backupFlash === 'done' && backup.lastRun) { %>
+    <% if (backup.lastRun.ok) { %>
+      <div class="flash flash-ok"><%- include('partials/icon', { name: 'check' }) %>Backup written to <code><%= backup.lastRun.dest %></code> (<%= backup.lastRun.sizeText %>).</div>
+    <% } else { %>
+      <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>Backup failed: <%= backup.lastRun.error %></div>
+    <% } %>
+  <% } %>
+  <% if (destProbe === 'ok') { %>
+    <div class="flash flash-ok"><%- include('partials/icon', { name: 'check' }) %>Destination is reachable and writable.</div>
+  <% } else if (destProbe === 'err') { %>
+    <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>Settings saved, but the destination could not be written right now: <%= destProbeMsg %></div>
+  <% } %>
+
+  <% if (backup.lastOk) { %>
+    <div class="detail-grid">
+      <div><span class="label">Last good backup</span> <%= backup.lastOk.whenText %> (<%= backup.lastOk.agoText %>)</div>
+      <div><span class="label">Size</span> <%= backup.lastOk.sizeText %></div>
+      <div><span class="label">Written to</span> <code class="backup-path"><%= backup.lastOk.dest %></code></div>
+      <% if (backup.nextDueText) { %><div><span class="label">Next automatic</span> <%= backup.nextDueText %></div><% } %>
+    </div>
+  <% } else { %>
+    <p class="hint">No successful backups yet.</p>
+  <% } %>
+  <% if (backup.lastRun && !backup.lastRun.ok && backupFlash !== 'done') { %>
+    <div class="flash flash-error"><%- include('partials/icon', { name: 'error' }) %>Last backup attempt failed <%= backup.lastRun.agoText %>: <%= backup.lastRun.error %></div>
+  <% } %>
+  <% if (!backup.configured) { %>
+    <div class="flash flash-error"><%- include('partials/icon', { name: 'warning' }) %>No off-PC backup destination is set. "Back up now" writes to <code><%= backup.localDir %></code> on <strong>this PC</strong> — that will not survive losing the PC. Automatic backups stay off until a destination is set below.</div>
+  <% } %>
+
+  <form method="post" action="/admin/backup-config" class="stack-form">
+    <label>Backup destination folder <small>(network share, UNC path, or second drive — whatever IT provides; leave blank until decided)</small>
+      <input type="text" name="backupDest" value="<%= config.backupDest %>"
+             placeholder="\\fileserver\share\shopstock-backups">
+    </label>
+    <label>Automatic backup interval, hours <small>(runs while the app is open, once the last backup is older than this; 0 turns automatic backups off)</small>
+      <input type="number" name="backupIntervalHours" value="<%= config.backupIntervalHours %>" min="0" step="any">
+    </label>
+    <label>Keep backups, days <small>(older zips at the destination are deleted after a successful backup; the newest one is always kept; 0 keeps everything)</small>
+      <input type="number" name="backupKeepDays" value="<%= config.backupKeepDays %>" min="0" step="any">
+    </label>
+    <button type="submit" class="btn btn-primary">Save backup settings</button>
   </form>
+
+  <form method="post" action="/admin/backup" class="inline-form">
+    <button type="submit" class="btn" <%= backup.running ? 'disabled' : '' %>>Back up now</button>
+  </form>
+  <p class="hint">Each backup is one zip: a consistent database snapshot (safe while the app is in use), all photos, and a manifest. To restore onto this or a new PC, run <code>scripts\restore.ps1 -Zip &lt;backup zip&gt;</code> — see <code>docs\DEPLOY.md</code>.</p>
+
+  <% if (backup.runs.length) { %>
+    <ul class="plain-list backup-runs">
+      <% for (const r of backup.runs) { %>
+        <li class="<%= r.ok ? 'run-ok' : 'run-fail' %>">
+          <%- include('partials/icon', { name: r.ok ? 'check' : 'error' }) %>
+          <%= r.whenText %> (<%= r.agoText %>) · <%= r.source %> ·
+          <% if (r.ok) { %><%= r.sizeText %><% } else { %><span class="run-error"><%= r.error %></span><% } %>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
 </section>
 
 <section>
