@@ -25,8 +25,11 @@ repo; this one exists purely for easy installation on locked-down PCs.
 - **Barcode scanner**: plug in any USB scanner — it works immediately; scan any
   printed label from any page in the app
 - **Print labels**: Labels page → Code 128 → Avery 5160 sheet on any office printer
-- **Your inventory lives in the `data\` subfolder** it creates on first run —
-  back that folder up (see `docs/DEPLOY.md`; `scripts\backup.ps1` is scheduled-task ready)
+- **Your inventory lives in the `data\` subfolder** it creates on first run
+- **Backups (do this once):** open the **Admin** page and set a backup
+  destination — any network share or second drive IT gives you. The app then
+  backs itself up automatically while it's running and shows backup health
+  right on that page. Restore with `scripts\restore.ps1` (see `docs/DEPLOY.md`)
 
 ## Upgrading (your data is safe)
 
