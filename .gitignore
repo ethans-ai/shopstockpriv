@@ -1,0 +1,12 @@
+# This is the ready-to-run build repo: node_modules/ and node.exe are
+# deliberately committed so the bundle runs with no install. Only runtime
+# state is ignored here.
+
+# Inventory database + photos, created on first run
+data/
+
+# Written by the /admin page; holds the scrypt admin PIN hash
+config.json
+
+*.log
+shopstock-portable.zip
